@@ -1,6 +1,7 @@
 Set-Content -Path "C:\AuditDev\WilliamsF1-WorkstationAudit\config\workstation-config.ps1" -Encoding UTF8 -Value @"
 # =============================================
 # CONFIG: Williams F1 Workstation Audit v1.0
+# Author: Curtis-Davidson & Urbantek
 # =============================================
 
 # Timestamp (UK Format)

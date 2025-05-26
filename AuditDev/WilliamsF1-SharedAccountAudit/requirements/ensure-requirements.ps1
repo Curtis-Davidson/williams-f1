@@ -2,7 +2,7 @@ Set-Content -Path "C:\AuditDev\WilliamsF1-SharedAccountAudit\requirements\ensure
 # =============================================
 # REQUIREMENTS CHECK: Williams F1 AD Audit Stack
 # File: /requirements/ensure-requirements.ps1
-# Author: Curtis-Davidson & G
+# Author: Curtis-Davidson & Urbantek
 # Version: 2025.6.4
 # =============================================
 

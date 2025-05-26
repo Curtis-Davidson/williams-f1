@@ -1,7 +1,7 @@
 # =============================================
 # Williams F1 Workstation Audit – Local User + Software + Rights
 # File: /scripts/williamsf1-workstation-audit.ps1
-# Author: Curtis-Davidson & G
+# Author: Curtis-Davidson & Urbantek
 # Version: 2025.6.4
 # =============================================
 

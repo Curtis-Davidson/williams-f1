@@ -2,6 +2,7 @@
 # CONFIG: Williams F1 AD Full Discovery Audit
 # Author: Curtis-Davidson & G
 # Version: 2025.6.4 - No Scoring Mode
+# Author: Curtis-Davidson & Urbantek
 # =============================================
 
 # Timestamp format (UK)

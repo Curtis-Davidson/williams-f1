@@ -1,7 +1,7 @@
 # =============================================
 # Makefile-Style Audit Runner for Williams F1
 # File: /scripts/make.ps1
-# Author: Curtis-Davidson & G
+# Author: Curtis-Davidson & Urbantek
 # =============================================
 
 param (

@@ -1,7 +1,7 @@
 # =============================================
 # Williams F1 Workstation Module Requirements
 # File: /requirements/workstation-requirements.ps1
-# Author: Curtis-Davidson & G
+# Author: Curtis-Davidson & Urbantek
 # =============================================
 
 # === Logging Setup ===

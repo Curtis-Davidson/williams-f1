@@ -2,7 +2,7 @@ Set-Content -Path "C:\AuditDev\WilliamsF1-SharedAccountAudit\scripts\make.ps1" -
 # =============================================
 # MAKE SCRIPT: Master Runner for Full Audit Job
 # File: /scripts/make.ps1
-# Author: Curtis-Davidson & G
+# Author: Curtis-Davidson & Urbantek
 # Version: 2025.6.4
 # =============================================
 
