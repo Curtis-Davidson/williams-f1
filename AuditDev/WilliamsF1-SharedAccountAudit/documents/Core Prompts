@@ -1,0 +1,145 @@
+
+##  Prompt Engineering Reference — WilliamsF1 Audit Project (CRAFT Aligned)
+
+This section documents all critical prompt engineering instructions used (and recommended) for building, testing, and maintaining the **WilliamsF1 Workstation Audit Framework**.
+
+---
+
+###  Prompts Already Used Correctly
+
+| Layer | Prompt | Purpose |
+|-------|--------|---------|
+| **C – Clear Command**       | `Give me a full PowerShell script with admin check, error logging, and file export to CSV and HTML`   | Ensures clear entry-point and output audit trail |
+| **R – Robust Reasoning**    | `Explain why we use \`$policy -eq 'Restricted'\` and exit codes` | Validates script logic reasoning   |
+| **A – Automation Friendly** | `Wrap this script in a Makefile.ps1 and call it with a single task` | Automation entry-point creation |
+| **F – Failsafe Design**     | `Confirm this script makes no destructive changes and only audits` | Ensures safe read-only posture   |
+| **T – Testable Templates**  | `Split this into modular structure under /lib/, /requirements/, /scripts/`                            | Reusability and version control compliance |
+
+---
+
+###  Prompts You Should Still Use Now
+
+#### 1. GitOps & Workflow
+
+```bash
+"Provide me with a GitHub Actions workflow that checks linting and CI execution for PowerShell scripts in this repo"
+
+---
+
+Prompts You Should Still Use Now
+
+1. GitOps & Workflow
+
+"Provide me with a GitHub Actions workflow that checks linting and CI execution for PowerShell scripts in this repo"
+"Write a `.pre-commit-config.yaml` that enforces header standards, script linting, and CRAFT rules"
+
+
+2. Permissions, Security, and GPO Coverage
+
+"Write a script to extract all local GPO settings relevant to workstation hardening (RDP, admin rights, audit policies)"
+"List and describe SID-to-Profile mappings for all user accounts, and highlight shared accounts"
+"Create a report of local group memberships including Administrators, Remote Desktop Users, and Power Users"
+
+
+3. Edge-Case Testing
+
+"Simulate a workstation with missing ImportExcel module — what would the output look like and how should it fail gracefully?"
+"Write an additional Makefile.ps1 target to run all modules in dry-run/test mode"
+
+
+4. CAB & Change Approval Readiness
+
+"Generate a markdown Change Request summary for CAB based on our scripts, risks, outputs, and rollback needs"
+"List all risks if run against a live workstation in production and how we mitigate each"
+"Provide me with an enterprise-grade rollback plan even if our scripts are read-only"
+
+
+5. Prompt Engineering Mastery
+
+"Refactor this prompt to follow the CRAFT model explicitly: Command, Reasoning, Automation, Failsafe, Testable"
+"Audit this entire repository for CRAFT compliance — where are the gaps in comments, reasoning, or safe design?"
+
+Final Prompt to Tie It All Together
+
+"Generate a README summary that explains our CRAFT-aligned workstation audit framework, modules, and Makefile-based automation — ready for GitHub and CAB"
+
+------------------------------------------------------------------------------------------------------------------------
+
+
+#  WilliamsF1 Prompt Pack — CRAFT Engineering Vault
+
+> Last updated: 2025-05-26
+> Maintainer: Curtis-Davidson
+> Project: `williams-f1` Audit Suite
+> Structure: Follows the [CRAFT model](#CRAFT-breakdown) — Command, Reasoning, Automation, Failsafe, Testable
+
+---
+
+##  GitOps & Development Workflow
+
+###  Setup
+
+```bash
+"Provide me with a GitHub Actions workflow that checks linting and CI execution for PowerShell scripts in this repo"
+
+---
+
+"Write a `.pre-commit-config.yaml` that enforces header standards, script linting, and CRAFT rules"
+"Generate a Makefile.ps1 that calls each module with logging, validation, and CI compatibility"
+
+---
+
+Permissions, Security & Shared Account Forensics
+GPO & User Rights
+
+"Write a script to extract all local GPO settings relevant to workstation hardening (RDP, admin rights, audit policies)"
+"List and describe SID-to-Profile mappings for all user accounts, and highlight shared accounts"
+"Create a report of local group memberships including Administrators, Remote Desktop Users, and Power Users"
+
+---
+
+Safe Simulation & Failure Handling
+Dry-run & Risk Isolation
+
+"Simulate a workstation with missing ImportExcel module — what would the output look like and how should it fail gracefully?"
+"Write an additional Makefile.ps1 target to run all modules in dry-run/test mode"
+"Refactor all audit modules to exit on unmet preconditions without running destructive logic"
+
+---
+
+Change Management (CAB-Ready)
+CRAFT Audits
+
+"Refactor this prompt to follow the CRAFT model explicitly: Command, Reasoning, Automation, Failsafe, Testable"
+"Audit this entire repository for CRAFT compliance — where are the gaps in comments, reasoning, or safe design?"
+"Convert the CRAFT Prompt Matrix into a markdown diagnostic tool for this repo"
+
+---
+
+Reproducible Prompt Infrastructure (Optional Enhancements)
+
+"Build a Notion or Obsidian knowledge base around this prompt pack with categories and links"
+"Create reusable system prompts or prompt templates that can be pulled via GitHub CLI or API"
+
+---
+
+##  CRAFT Breakdown
+
+| **Layer** | **What It Means**        | **Implementation**                                                                 |
+|-----------|--------------------------|------------------------------------------------------------------------------------|
+| **C**     | **Clear Command**        | Every script has clear entry points, file paths, and comments                      |
+| **R**     | **Robust Reasoning**     | Admin checks, module validation, failure exits all in place                        |
+| **A**     | **Automation Friendly**  | Logs, colours, emoji, and CLI+CSV+HTML output                                      |
+| **F**     | **Failsafe Design**      | No destructive commands, all read-only unless explicitly chosen                    |
+| **T**     | **Testable Templates**   | Modularised with `lib`, `requirements`, `Makefile.ps1` — CI/CD ready               |
+
+
+---
+
+Location Suggestion
+
+Prompt engineering reference: [.github/prompt-pack.md](.github/prompt-pack.md)
+
+
+
+
