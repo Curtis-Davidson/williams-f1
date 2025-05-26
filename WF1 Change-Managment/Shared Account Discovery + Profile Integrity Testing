@@ -1,0 +1,252 @@
+Title: Change Control: ModelShop Workstation & Shared Account Discovery + Profile Integrity Testing
+Type: Standard Change
+Environment: Production – Engineering Workstations (CAD, Scanning, Modelling)
+Owner: Curtis-Davidson
+Department: Infrastructure & Endpoint Security
+
+
+-----------------------
+
+1. Change Purpose
+
+The purpose of this change is to assess and test the transition from **shared user accounts** to **named individual accounts** for the ModelShop engineering team. This includes:
+
+- Discovery of current GPO, login flows, workstation config, and software bindings
+- Safely testing script execution and configuration changes on one workstation
+- Preserving and migrating profile data (including CAD, CAM, 3D scan drivers, licensing)
+- Implementing enterprise-grade methodology for future rollout
+
+Objective:
+→ Replace shared logins with properly scoped individual and team-shared accounts, without breaking existing environments or losing profile-integrated software state.
+
+------------------------------------------------------------------------------------------------------------------------
+
+
+
+2. Scope of Change
+
+Applies To:
+- 1x selected ModelShop workstation (CAD-configured)
+- Current shared account (e.g. MODEL-SHOP\WorkshopUser)
+- Audit of tools including: SolidWorks, AutoCAD, MeshLab, proprietary scan drivers
+
+Includes:
+- Scripted workstation inspection (AuditWS)
+- Analysis of registry, roaming/local profile data
+- SID backup, profile redirection
+- Backup of current working state
+
+Does NOT Apply To:
+- Domain controller modifications (initial scope only reads AD)
+- Full GPO enforcement changes — only discovery
+
+Tools Used:
+- `AuditWS` discovery modules
+- `AuditScripts\workstation-core.ps1`
+- `Get-LoggedInUsers`, `Get-UserProfiles`, `Get-UserRightsAssignments`
+- Profile integrity script (WIP)
+
+
+------------------------------------------------------------------------------------------------------------------------
+
+
+3. Change Steps / Methodology
+
+Step 1: Snapshot Current Profile State
+---------------------------------------
+- Backup full user profile: `C:\Users\WorkshopUser`
+- Export NTUSER.DAT, AppData, registry keys via PowerShell
+- Use: `robocopy` and `reg export`
+- Confirm backup stored to: `\\fileserver\AuditBackups\ModelShop\{timestamp}`
+
+Step 2: Audit and Log Configuration
+---------------------------------------
+- Run:
+  - `workstation-core.ps1`
+  - `Get-UserRightsAssignments`
+  - `Get-LoggedInUsers`
+  - `Export-GPOReport` (target OU)
+- Log SID, GPOs, local group membership, mapped drives, CAD registry entries
+
+Step 3: Define Enterprise Account Schema
+-----------------------------------------
+- Create:
+  - `ModelShop-User-{Name}` (individual domain user)
+  - `ModelShop-Shared` (group-based workstation access)
+  - `ModelShop-G-Workstations` (AD group)
+- Configure GPO linking:
+  - Folder redirection OFF
+  - Roaming profiles disabled
+  - Logon script set for logging only
+
+Step 4: Profile Migration Safety Test
+-----------------------------------------
+- Run test user logon
+- Use `User Profile Wizard` or `Profwiz` if applicable (only if profile copy is clean)
+- Test mapping profile to old shared account SID (if needed)
+- Confirm:
+  - Software loads
+  - Licensing not invalidated
+  - Printers, drives, context menu integrations intact
+
+Step 5: Risk Mitigation Check
+-------------------------------
+- Log changes to:
+  - `HKCU\Software\...`
+  - AppData paths
+- Run full diff of `C:\Users\OldUser` vs `NewUser`
+- Validate file permissions with:
+  - `icacls "C:\Users\..." /save perms.txt`
+
+Step 6: Final Report + Rollback Plan
+--------------------------------------
+- Dump workstation log to:
+  `\\fileserver\AuditLogs\ModelShop-Audit-{hostname}.txt`
+- Confirm new account performs all workflows
+- Rollback by:
+  - Re-mapping original profile
+  - Restoring NTUSER.DAT and folder backup
+  - Reverting workstation OU (if applied)
+
+
+  ----------------------------------------------------------------------------------------------------------------------
+
+
+4. Risk Assessment
+
+Risk Level: Medium–High (specialised engineering software profiles)
+
+Risks:
+- CAD/scan tools may be tied to user SID
+- Profile migration may corrupt user-specific paths
+- Shared devices may cache licensing data under current user
+
+Mitigations:
+- Full profile backup prior to change
+- Only test on isolated machine
+- Run diff on `C:\ProgramData`, `HKLM\Software`, and `HKCU` post-logon
+- Keep old profile untouched unless proven stable
+
+SID-linked apps:
+- Monitor SolidWorks registry
+- Confirm MeshLab doesn't hardcode AppData
+
+
+------------------------------------------------------------------------------------------------------------------------
+
+
+5. Rollback Procedure
+
+1. Rename or delete new profile (e.g. `C:\Users\ModelShop-Test`)
+2. Reassign old profile via regedit:
+   - `HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList`
+3. Reapply shared account to workstation
+4. Restore from:
+   `\\fileserver\AuditBackups\ModelShop\{timestamp}\`
+
+Confirm software integrity before full user migration.
+
+
+------------------------------------------------------------------------------------------------------------------------
+
+
+6. Validation Criteria
+
+
+✅ New user logs in with clean profile
+✅ Software launches without config loss
+✅ Scan devices detected
+✅ Printers auto-mapped or manually installable
+✅ Profile SID integrity preserved
+
+If any fail:
+❌ Rollback triggered
+
+
+------------------------------------------------------------------------------------------------------------------------
+
+7. Justification / Strategic Need
+
+- Enforces audit trail compliance
+- Aligns with Cyber Essentials / ISO 27001 shared account deprecation
+- Enables per-user logging, RBAC GPO enforcement
+- Prevents config corruption due to multi-user profile conflicts
+- Increases security posture of the engineering domain
+
+
+------------------------------------------------------------------------------------------------------------------------
+
+8. Change Window
+
+Preferred time: Off-hours or end of workday
+Duration: ~60 mins initial workstation test
+Final rollout after approval: staged per workstation
+
+
+
+------------------------------------------------------------------------------------------------------------------------
+
+9. Stakeholders
+	•	Curtis-Davidson — Change Owner
+	•	Workshop Engineering Lead — Reviewer
+	•	Infrastructure Team — GPO & AD config
+	•	Service Desk — Rollout support
+
+⸻
+
+Would you like me to:
+	•	Output this as .md or .ps1 comment block?
+	•	Build a prefilled PowerShell script for profile preservation & SID integrity logging?
+	•	Generate the .reg or robocopy commands for profile backup/migration?
+
+
+------------------------------------------------------------------------------------------------------------------------
+
+
+##  Justification for Running Exploratory Scripts vs Lansweeper
+
+In preparation for ModelShop environment validation and pre-change auditing, we are executing curated exploratory PowerShell scripts rather than relying solely on Lansweeper.
+
+> This approach provides **real-time system state**, **deep user-profile insight**, and **full audit traceability**—essential in high-dependency environments with CAD, scanning, and engineering applications.
+
+---
+
+###  Key Advantages of Exploratory Scripts vs Lansweeper
+
+| **Feature / Need**                                  | **Lansweeper**              | **PowerShell Exploratory Scripts**       |
+|-----------------------------------------------------|-----------------------------|------------------------------------------|
+| **Real-time execution context**                     | ❌ Static / last scan only  | ✅ Executes live, logs state             |
+| **Full user profile analysis (AppData, SIDs)**      | ❌ Not supported            | ✅ Deep per-user inspection              |
+| **SID-to-Profile mapping for migration**            | ❌ Not exposed              | ✅ Fully traceable via script            |
+| **CAD-specific configurations (registry + paths)**  | ❌ Generic data only        | ✅ Custom targeted logic                 |
+| **Live event log correlation (logon audits)**       | ❌ Not captured             | ✅ Captured with `Get-WinEvent`          |
+| **GPO and local rights enumeration**                | ❌ Requires complex config  | ✅ Scripted via `secedit`, `gpresult`    |
+| **Testing impact in situ (pre-change simulation)**  | ❌ Not possible             | ✅ Safe, isolated, reportable            |
+| **Custom output to HTML, CSV, Teams logs**          | ❌ Vendor-locked            | ✅ Fully controlled outputs              |
+| **Version-controlled logic**                        | ❌ GUI-limited              | ✅ GitOps compliant, auditable           |
+
+---
+
+###  Summary
+
+This exploratory method:
+- Validates live environment states
+- Preserves profile and configuration fidelity
+- Aligns with ITIL **risk reduction** and **Change Evaluation** goals
+- Provides a clean, deterministic rollback path if anomalies are found
+
+All outputs are HTML and CSV export-ready, logged, and committed to Git (SHA traceable). This ensures **audit trail integrity**, **configuration observability**, and **gold-standard operational maturity**.
+
+> **Authorised by:** Curtis-Davidson | Urbantek | WilliamsF1
+
+
+
+------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+

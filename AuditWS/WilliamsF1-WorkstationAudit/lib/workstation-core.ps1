@@ -1,20 +1,20 @@
-# =============================================
+# ==========================================================
 # MODULE: Williams F1 Workstation Discovery Core
 # Path: /lib/workstation-core.ps1
 # Author: Curtis-Davidson & Urbantek
-# =============================================
+# ==========================================================
 
 # --- Get-InstalledApplications ---
 function Get-InstalledApplications {
     <#
     .SYNOPSIS
-    Returns a list of installed applications from registry
+    Returns a list of installed applications from registry.
 
     .DESCRIPTION
-    Enumerates 32-bit and 64-bit registry paths to capture all MSI and manual installs
+    Enumerates 32-bit and 64-bit registry paths to capture all MSI and manual installs.
 
     .OUTPUTS
-    Array of PSCustomObject with Name, Version, Publisher, InstallDate
+    Array of PSCustomObject with Name, Version, Publisher, InstallDate.
     #>
     $paths = @(
         'HKLM:\Software\Microsoft\Windows\CurrentVersion\Uninstall\*',
@@ -22,7 +22,7 @@ function Get-InstalledApplications {
     )
 
     foreach ($path in $paths) {
-        Get-ItemProperty $path -ErrorAction SilentlyContinue | ForEach-Object {
+        Get-ItemProperty -Path $path -ErrorAction SilentlyContinue | ForEach-Object {
             [PSCustomObject]@{
                 Name        = $_.DisplayName
                 Version     = $_.DisplayVersion
@@ -37,10 +37,10 @@ function Get-InstalledApplications {
 function Get-MappedDrives {
     <#
     .SYNOPSIS
-    Returns currently mapped network drives
+    Returns currently mapped network drives.
 
     .OUTPUTS
-    Array of PSCustomObject with DriveLetter, RemotePath
+    Array of PSCustomObject with DriveLetter, RemotePath.
     #>
     Get-WmiObject -Query "Select * from Win32_MappedLogicalDisk" | ForEach-Object {
         [PSCustomObject]@{
@@ -54,12 +54,12 @@ function Get-MappedDrives {
 function Get-LoggedInUsers {
     <#
     .SYNOPSIS
-    Returns list of users logged in over last 30 days via Security log
+    Returns list of users logged in over last 30 days via Security log.
 
     .OUTPUTS
-    Array of strings (usernames)
+    Array of strings (usernames).
     #>
-    $logins = Get-WinEvent -LogName Security -FilterHashtable @{Id=4624; StartTime=(Get-Date).AddDays(-30)} -MaxEvents 5000 |
+    $logins = Get-WinEvent -LogName Security -FilterHashtable @{ Id = 4624; StartTime = (Get-Date).AddDays(-30) } -MaxEvents 5000 |
             Where-Object { $_.Properties[5].Value -ne "ANONYMOUS LOGON" } |
             Select-Object -ExpandProperty Properties |
             Where-Object { $_.Value -match ".*\\.*" } |
@@ -73,10 +73,10 @@ function Get-LoggedInUsers {
 function Get-UserRightsAssignments {
     <#
     .SYNOPSIS
-    Returns all user rights assignments (e.g., logon locally, shutdown system)
+    Returns all user rights assignments (e.g., logon locally, shutdown system).
 
     .OUTPUTS
-    Hashtable of privileges and corresponding users/groups
+    Hashtable of privileges and corresponding users/groups.
     #>
     secedit /export /cfg "$env:TEMP\secedit.cfg" > $null
     $lines = Get-Content "$env:TEMP\secedit.cfg" | Where-Object { $_ -like "Se*Privilege*" }
@@ -94,33 +94,33 @@ function Get-UserRightsAssignments {
 function Get-UserProfiles {
     <#
     .SYNOPSIS
-    Returns all local profiles with their size, last use, and SID
+    Returns all local profiles with their size, last use, and SID.
 
     .OUTPUTS
-    Array of PSCustomObject
+    Array of PSCustomObject.
     #>
     Get-CimInstance -ClassName Win32_UserProfile | Where-Object { $_.LocalPath -like "C:\Users\*" } | ForEach-Object {
         [PSCustomObject]@{
-            UserSID     = $_.SID
-            Path        = $_.LocalPath
-            LastUse     = $_.LastUseTime
-            IsRoaming   = $_.RoamingConfigured
-            IsLoaded    = $_.Loaded
+            UserSID   = $_.SID
+            Path      = $_.LocalPath
+            LastUse   = $_.LastUseTime
+            IsRoaming = $_.RoamingConfigured
+            IsLoaded  = $_.Loaded
         }
     }
 }
 
-# --- Describe-ProfileState ---
-function Describe-ProfileState {
+# --- Get-ProfileState ---
+function Get-ProfileState {
     <#
     .SYNOPSIS
-    Describes whether a user profile is active, stale, or roaming
+    Returns the state of a user profile (active, stale, roaming).
 
     .PARAMETER ProfileObject
-    One object from Get-UserProfiles
+    One object from Get-UserProfiles.
 
     .OUTPUTS
-    String describing state
+    String describing state.
     #>
     param (
         [Parameter(Mandatory)]
@@ -129,8 +129,16 @@ function Describe-ProfileState {
 
     $ageDays = ((Get-Date) - $ProfileObject.LastUse).Days
 
-    if ($ProfileObject.IsRoaming -eq $true) { return "Roaming Profile" }
-    elseif ($ageDays -gt 90) { return "Stale Profile (>90 days)" }
-    elseif ($ProfileObject.IsLoaded) { return "Active" }
-    else { return "Inactive" }
+    if ($ProfileObject.IsRoaming -eq $true) {
+        return "Roaming Profile"
+    }
+    elseif ($ageDays -gt 90) {
+        return "Stale Profile (>90 days)"
+    }
+    elseif ($ProfileObject.IsLoaded) {
+        return "Active"
+    }
+    else {
+        return "Inactive"
+    }
 }

@@ -50,21 +50,21 @@ if ($policy -eq 'Restricted') {
 }
 
 # === STEP 3: Required Module Installer ===
-function Ensure-Module {
+function Install-RequiredModule {
     param (
         [Parameter(Mandatory)][string]$ModuleName
     )
 
     if (-not (Get-Module -ListAvailable -Name $ModuleName)) {
         try {
-            Log -Level "INFO" -Message "Attempting to install missing module: $ModuleName"
+            Log -Level "INFO" -Message "Attempting to install missing module: ${ModuleName}"
             Install-Module -Name $ModuleName -Scope CurrentUser -Force -AllowClobber -ErrorAction Stop
-            Log -Level "SUCCESS" -Message "Installed module: $ModuleName"
+            Log -Level "SUCCESS" -Message "Installed module: ${ModuleName}"
         } catch {
-            Log -Level "FAIL" -Message "Failed to install $ModuleName: $($_.Exception.Message)"
+            Log -Level "FAIL" -Message "Failed to install ${ModuleName}: $($_.Exception.Message)"
         }
     } else {
-        Log -Level "INFO" -Message "Module already present: $ModuleName"
+        Log -Level "INFO" -Message "Module already present: ${ModuleName}"
     }
 }
 
@@ -76,7 +76,7 @@ $requiredModules = @(
 )
 
 foreach ($mod in $requiredModules) {
-    Ensure-Module -ModuleName $mod
+    Install-RequiredModule -ModuleName $mod
 }
 
 # === STEP 5: Module Summary Table ===

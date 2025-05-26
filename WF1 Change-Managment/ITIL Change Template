@@ -1,0 +1,64 @@
+CRAFT PROMPT — ITIL Change Template
+
+Title: Change Control: Controlled Testing of Audit Script Modules (AuditDev, AuditScripts, AuditWS) on Live Workstations
+Type: Standard / Normal (non-emergency)
+Classification: Controlled Script Execution for Audit, Discovery, and Compliance Verification
+
+⸻
+
+1. Change Purpose
+
+The purpose of this change is to execute and validate enterprise-grade audit and discovery PowerShell scripts across three modular environments:
+- **AuditDev**: Development and testbed script staging
+- **AuditScripts**: Core production audit libraries (admin rights, user rights, software, profiles)
+- **AuditWS**: Workstation-bound security, logon, and local discovery logic
+
+This is to verify:
+
+
+Scripts include:
+
+
+
+2. Scope of Change
+
+
+
+
+3. Risk Assessment
+
+
+
+4. Change Implementation Steps
+
+
+5. Rollback / Recovery
+
+	•	No changes to system configuration or registry
+	•	No services or scheduled tasks modified
+	•	Safe to re-run on clean system with no side effects
+
+Escalation: Rollback plan handled by Curtis-Davidson. If script failure causes OS load issues, reboot clears all memory-bound impact.
+
+
+
+
+7. Business Justification
+
+This change ensures workstation environment scripts are validated in production-like scenarios for audit compliance, security reporting, and workstation telemetry discovery.
+This aligns with ITIL and ISO 27001 continuous monitoring and forensic readiness goals.
+
+
+
+8. Stakeholders / Approvers
+	•	Curtis-Davidson — Change Owner, Script Author
+	•	IT Security Team — Notified
+	•	Infrastructure Lead — FYI
+
+
+9. Schedule Window
+
+Planned window: [Insert date/time]
+Estimated impact time: 15–20 minutes per test machine
+Run on staggered rotation or cloned VM images if needed
+
