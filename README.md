@@ -308,6 +308,80 @@ Private repository under Urbantek.
 Do not redistribute or replicate without express permission.
 
 
+-----------------------------------------------------------
+
+To run all three areas — Shared User Audit, Workstation Audit, and Logon Audit — through your Makefile.ps1
+(PowerShell makefile wrapper) with automatic triggering of their respective requirements checks, the gold-standard command structure and trigger sequence would look like this:
+
+.\make.ps1 audit-all
+
+What this does (Enterprise-Grade Summary)
+	1.	Triggers all pre-run requirements:
+	•	Runs requirements/workstation-requirements.ps1 (module check, admin, policy)
+	•	Runs requirements/logon-requirements.ps1 (pre-flight for logon audit)
+	•	Shared account audits will eventually include their own checker
+	2.	Orchestrates execution of 3 core audits:
+	•	scripts/williamsf1-workstation-audit.ps1
+	•	scripts/williamsf1-logon-audit.ps1
+	•	scripts/williamsf1-sharedaccount-audit.ps1
+	3.	Maintains output logs, checks for failures, and ensures GitOps output compliance.
+
+⸻
+
+Your Makefile (make.ps1) Should Contain This:
+
+param (
+    [Parameter(Position = 0, Mandatory = $true)]
+    [ValidateSet("audit-workstation", "audit-logon", "audit-shared", "audit-all")]
+    [string]$Target
+)
+
+switch ($Target) {
+    "audit-workstation" {
+        & "$PSScriptRoot\..\requirements\workstation-requirements.ps1"
+        & "$PSScriptRoot\..\scripts\williamsf1-workstation-audit.ps1"
+    }
+
+    "audit-logon" {
+        & "$PSScriptRoot\..\requirements\logon-requirements.ps1"
+        & "$PSScriptRoot\..\scripts\williamsf1-logon-audit.ps1"
+    }
+
+    "audit-shared" {
+        & "$PSScriptRoot\..\scripts\williamsf1-sharedaccount-audit.ps1"
+    }
+
+    "audit-all" {
+        & "$PSScriptRoot\..\requirements\workstation-requirements.ps1"
+        & "$PSScriptRoot\..\requirements\logon-requirements.ps1"
+        & "$PSScriptRoot\..\scripts\williamsf1-workstation-audit.ps1"
+        & "$PSScriptRoot\..\scripts\williamsf1-logon-audit.ps1"
+        & "$PSScriptRoot\..\scripts\williamsf1-sharedaccount-audit.ps1"
+    }
+}
+
+---------------------------------------------------------------------------
+
+To Run Individually:
+
+.\make.ps1 audit-workstation
+.\make.ps1 audit-logon
+.\make.ps1 audit-shared
+
+-------------------------------------------------------------------------
+
+ Security & Profile Preservation Built-in
+	•	Each script is guarded by its own requirements script
+	•	Logs are stored in /logs with date + time stamp
+	•	Safe to run in live with logging, no destructive actions performed
+
+
+-------------------------------------------------------------------------
+
+
+
+
+
 
 
 
