@@ -89,10 +89,10 @@ This repo is validated against:
 Risk Mitigation & Rollback
 
 All scripts are read-only unless writing logs or reports.
-	•	❌ No system changes
-	•	❌ No AD or GPO writes
-	•	✅ All temp files logged and timestamped
-	•	✅ Easily revertible — delete /Output and /logs
+	•	 No system changes
+	•	 No AD or GPO writes
+	•	 All temp files logged and timestamped
+	•	 Easily revertible — delete /Output and /logs
 
 
 Best Practices
