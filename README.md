@@ -20,6 +20,20 @@ The scripts in this repository are used to:
 
 ---
 
+##  Key Advantages Over Lansweeper
+
+| **Feature**                        | **Lansweeper**    | **AuditScripts**             |
+|------------------------------------|-------------------|------------------------------|
+| Real-time execution                | ❌ Static only    | ✅ Live and traceable         |
+| Deep profile analysis              | ❌ Not supported  | ✅ Full `AppData` + SID       |
+| Logon event (4624) parsing         | ❌ Not captured   | ✅ Granular audit             |
+| GPO rights validation              | ❌ Complex config | ✅ `secedit` + parsing        |
+| Shared-to-user migration support   | ❌ Unsupported    | ✅ Profile-preserving         |
+| Custom output (CSV/HTML)           | ❌ Vendor-locked  | ✅ Controlled formats         |
+| GitOps versioned, auditable code   | ❌ GUI-limited    | ✅ CI-ready, script-tracked   |
+
+---
+
 ##  Repository Structure
 
 /requirements
