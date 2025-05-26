@@ -8,7 +8,7 @@ The goal of this project is to deliver **gold-standard workstation auditing**, *
 
 ---
 
-## 🔍 Purpose
+##  Purpose
 
 The scripts in this repository are used to:
 
@@ -20,7 +20,7 @@ The scripts in this repository are used to:
 
 ---
 
-## 📁 Repository Structure
+##  Repository Structure
 
 /requirements
 └── workstation-requirements.ps1     # Preflight checks for admin rights, policy, modules
