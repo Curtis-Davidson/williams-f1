@@ -54,7 +54,7 @@ foreach ($mod in $modules) {
             Log -Level "SUCCESS" -Message "$mod installed successfully"
         } catch {
             $errMsg = $_.Exception.Message
-            $failMessage = "Failed to install $mod: $errMsg"
+            $failMessage = "Failed to install ${mod}: ${errMsg}"
             Log -Level "FAIL" -Message $failMessage
             exit 113
         }
