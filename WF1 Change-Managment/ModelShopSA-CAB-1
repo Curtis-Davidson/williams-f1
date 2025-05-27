@@ -14,11 +14,11 @@
 This document outlines the complete CAB-approved enterprise method to transition the Modelshop team from a generic AD account to a secure, shared, auditable, and rights-controlled identity model using modern best practices.
 
 It adheres strictly to **CRAFT**:
-- ✅ Clear Command
-- ✅ Robust Reasoning
-- ✅ Automation Friendly
-- ✅ Failsafe Design
-- ✅ Testable Templates
+-  Clear Command
+-  Robust Reasoning
+-  Automation Friendly
+-  Failsafe Design
+-  Testable Templates
 
 ---
 
