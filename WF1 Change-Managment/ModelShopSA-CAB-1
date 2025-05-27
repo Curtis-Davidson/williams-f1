@@ -1,0 +1,188 @@
+
+#  Williams F1: Modelshop Shared Account – Full CAB Method (.md)
+
+**Project:** Modelshop Shared Account Migration  
+**Date:** 27 May 2025  
+**Author:** Curtis-Davidson | Urbantek  
+**Role:** Microsoft Enterprise Architect  
+**Version:** 2025.6.4  
+
+---
+
+##  Overview
+
+This document outlines the complete CAB-approved enterprise method to transition the Modelshop team from a generic AD account to a secure, shared, auditable, and rights-controlled identity model using modern best practices.
+
+It adheres strictly to **CRAFT**:
+- ✅ Clear Command
+- ✅ Robust Reasoning
+- ✅ Automation Friendly
+- ✅ Failsafe Design
+- ✅ Testable Templates
+
+---
+
+##  Phase 1: Account ID Setup Activities
+
+### 1. Setup AD Shared Account (`shr-modelshop`)
+**Ref:** modelshop-FR0001-01  
+- Create `shr-modelshop` in AD.
+- Restrict logon via `LogonWorkstations`.
+- Unique `sAMAccountName` and `UPN`.
+- Add notes in `info` field for owner and policy.
+
+---
+
+### 2. Setup Shared Mailbox
+**Ref:** modelshop-FR0003-01  
+- Mailbox: `modelshop@williamsf1.com`
+- Assign access via security group.
+- Configure automapping.
+- No migration of existing mail.
+
+---
+
+### 3. Setup MS Teams Identity
+**Ref:** modelshop-FR0004-01  
+- Enable MS Teams licence.
+- Assign profile identity to Teams.
+- Confirm chat and scheduling capabilities.
+
+---
+
+##  Phase 2: AD Group Configuration
+
+### 4. Setup AD RW/RO Groups
+**Ref:** modelshop-FR0021-01  
+- Create `grp-modelshopRW` & `grp-modelshopRO`.
+- Apply to network areas via NTFS/GPO.
+
+### 5. Setup Login Access Control
+**Ref:** modelshop-FR0022-01  
+- Create `grp-modelshopLAC`.
+- Used to control workstation login via GPO.
+
+### 6. Setup RDC Group
+**Ref:** modelshop-FR0024-01  
+- Create `grp-modelshopRDC`.
+- Assign for secure RDP to Modelshop systems.
+
+---
+
+##  Phase 3: Assign Account to Groups
+
+### 7. Add `shr-modelshop` to RW, LAC, RDC Groups
+**Refs:** modelshop-FR0041-01, FR0042-01, FR0044-01  
+- Assign group memberships.
+- Validate with `Get-ADUser -Properties MemberOf`.
+
+---
+
+##  Phase 4: File & Access Control
+
+### 8. Network Disk Access
+**Ref:** modelshop-FR0061-01  
+- Apply group ACLs on mapped shares.
+
+### 9. Local Disk Access
+**Ref:** modelshop-FR0062-01  
+- ACL inheritance across target drives.
+- NTFS audit logging for access tracking.
+
+### 10. SharePoint Access
+**Ref:** modelshop-FR0063-01  
+- SharePoint folders added with RW rights.
+
+---
+
+##  Phase 5: OneDrive & Media
+
+### 11. OneDrive Migration
+**Ref:** modelshop-FR0065-01  
+- Migrate data from Generic account to `shr-modelshop` OneDrive.
+- Sync media device photos to new M365 folder.
+- Confirm accessibility for team.
+
+---
+
+##  Phase 6: Local Administration & Security
+
+### 12. Local Admin Setup
+**Ref:** modelshop-FR0081-01  
+- Configure device `Local Administrators` group.
+- Only `DPT Admins` and no legacy accounts.
+
+### 13. Login Restriction for Category 8 Devices
+**Ref:** modelshop-FR0101-01  
+- Restrict to `shr-modelshop` and `grp-modelshopLAC`.
+
+### 14. RDC Rights Enforcement
+**Ref:** modelshop-FR0121-01  
+- Limit via GPO and firewall rule.
+- Confirm via script-based RDP probe.
+
+---
+
+##  Phase 7: App Configuration & Compliance
+
+### 15. App Compatibility Review
+**Ref:** modelshop-FR0141-01  
+- Test CAD, scanning, and legacy apps under `shr-modelshop`.
+
+### 16. Licensing Review
+**Ref:** modelshop-FR0142-01  
+- Confirm licensing with vendors (e.g., NX, Siemens).
+
+---
+
+##  Phase 8: Credentials & Decommissioning
+
+### 17. Password Policy & Vaulting
+**Ref:** modelshop-FR0361-01  
+- Enforce 12-month password expiry.
+- Vault credentials (CyberArk, Keeper, or similar).
+
+### 18. Document Owner & Notes in AD
+**Ref:** modelshop-FR0362-01  
+- Add `info` field:  
+  `Owner: Mark Peers; Reset yearly; Vault ID: CHL-MODEL001`
+
+### 19. Disable Generic Account
+**Ref:** modelshop-FR0501-01  
+- Disable old `modelshop` user.
+- Remove from all groups.
+- Confirm via `Get-ADUser` & log off sessions.
+
+---
+
+##  Finalisation
+
+### 20. Confirm Readiness with Business
+**Ref:** modelshop-FR0421-01  
+- Business owner to validate successful switch.
+- Remove references to Generic accounts in SOPs.
+- Final checklist signed at CAB.
+
+---
+
+###  Audit Outputs
+| Format | Location | Purpose |
+|--------|----------|---------|
+| CSV    | `Output\*Audit*.csv` | Structured data for Excel |
+| HTML   | `Output\*Audit*.html` | GUI-friendly |
+| JSON   | `Output\*Audit*.json` | API/machine-parseable |
+| Markdown | `Output\*Audit*.md` | CAB & Documentation |
+
+---
+
+##  Built With CRAFT Principles
+
+- **C**: Each step has clear entry, exit, and log.
+- **R**: Admin checks, fallbacks, full path tracing.
+- **A**: Output for both CLI and GUI.
+- **F**: No destructive actions without intent.
+- **T**: Modular, versionable scripts via `Makefile.ps1`, `lib`, and `requirements`.
+
+---
+
+Would you like this saved to `williamsf1-cab-method.md` and committed to GitHub now?
