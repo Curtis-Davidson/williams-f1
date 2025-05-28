@@ -183,6 +183,161 @@ It adheres strictly to **CRAFT**:
 - **F**: No destructive actions without intent.
 - **T**: Modular, versionable scripts via `Makefile.ps1`, `lib`, and `requirements`.
 
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+# Williams F1: Modelshop Shared Account – Full CAB Submission
+
+**Project:** Modelshop Shared Account Migration  
+**Date:** 27 May 2025  
+**Author:** Curtis-Davidson, Urbantek  
+**Role:** Microsoft Enterprise Architect  
+**Version:** 2025.6.4  
+
 ---
 
-Would you like this saved to `williamsf1-cab-method.md` and committed to GitHub now?
+## C – Context (Business & Technical Overview)
+
+This CAB submission outlines the secure transition of the *Modelshop* function from a generic Active Directory account to a dedicated, rights-controlled shared identity. This initiative ensures:
+- Auditable access
+- Rights segregation
+- Regulatory alignment
+- Cloud service compatibility
+
+It enables secure Microsoft 365 integration, modern collaboration tools (Teams, SharePoint, OneDrive), and proper NTFS-based access segregation—all in line with zero-trust and least-privilege principles.
+
+---
+
+## R – Risk Assessment (Pre-Change State + Failure Modes)
+
+**Current State:**
+- A generic AD account is in use for Modelshop operations.
+- No audit traceability, no access control boundaries, high lateral movement risk.
+- Shared credentials used across multiple endpoints.
+
+**Risks of Not Changing:**
+- Ongoing security non-compliance.
+- No accountability trail for user actions.
+- Inability to implement granular access or MFA.
+
+**Potential Failure Modes (Post-Change):**
+- Group membership misconfiguration may deny access.
+- Teams or OneDrive may not map correctly if license not applied properly.
+- Folder ACL propagation failures can block access to mapped drives.
+- Incomplete mailbox permission mapping.
+
+---
+
+## A – Action Plan (Implementation Steps)
+
+### **Phase 1: Account ID Setup**
+
+**[modelshop-FR0001-01]**  
+- Create `shr-modelshop` account in AD.  
+- Set `LogonWorkstations` to restrict use.  
+- Add metadata in `info` field (purpose, owner).  
+- Assign unique `sAMAccountName` and `UPN`.
+
+**[modelshop-FR0003-01]**  
+- Create shared mailbox: `modelshop@williamsf1.com`.  
+- Assign via security group, enable automapping.
+
+**[modelshop-FR0004-01]**  
+- Assign MS Teams license.  
+- Confirm ability to schedule meetings and access chats.
+
+---
+
+### **Phase 2: AD Group Configuration**
+
+**[modelshop-FR0021-01]**  
+- Create and populate:  
+  - `grp-modelshopRW` (Read/Write access)  
+  - `grp-modelshopRO` (Read-Only access)
+
+**[modelshop-FR0022-01]**  
+- Create `grp-modelshopLAC` for workstation login control.
+
+**[modelshop-FR0024-01]**  
+- Create `grp-modelshopRDC` for RDP access.
+
+---
+
+### **Phase 3: Group Assignment**
+
+**[modelshop-FR0041-01, FR0042-01, FR0044-01]**  
+- Add `shr-modelshop` to RW, LAC, and RDC groups.  
+- Confirm group membership with:
+
+```powershell
+Get-ADUser shr-modelshop -Properties MemberOf
+```
+
+---
+
+### **Phase 4: File & Access Control**
+
+**[modelshop-FR0061-01]**  
+- Apply ACLs via NTFS to network drives for group access.
+
+**[modelshop-FR0062-01]**  
+- Ensure ACL inheritance and enable audit logging on local storage.
+
+**[modelshop-FR0063-01]**  
+- Provision SharePoint folders with `grp-modelshopRW` permissions.
+
+---
+
+### **Phase 5: OneDrive & Media Migration**
+
+**[modelshop-FR0065-01]**  
+- Migrate OneDrive contents from previous account.  
+- Sync media photos to new M365 Modelshop folder.  
+- Confirm all users have expected access.
+
+---
+
+## F – Failsafe Design (Rollback & Contingency)
+
+- Backup original group membership of generic account.
+- Keep generic account disabled but not deleted for 30 days.
+- Test logon, RDP, Teams, SharePoint, OneDrive functionality via test logins.
+- Document all ACL changes with export:
+
+```powershell
+icacls X:\Modelshop /save acl-modelshop.txt /T
+```
+
+---
+
+## T – Testable Template (Acceptance Criteria)
+
+**Basic Functionality:**
+- ✅ User can log in to assigned workstation.
+- ✅ Teams chat and calendar operate normally.
+- ✅ SharePoint folders load with RW access.
+- ✅ OneDrive available with synced content.
+- ✅ Mapped network drives accessible.
+- ✅ RDP works to target Modelshop systems.
+
+**Regression Checks:**
+- [ ] Folder ACLs preserved post-migration  
+- [ ] SharePoint permissions reflect correct group  
+- [ ] No unintended access by unauthorised users  
+- [ ] RDP logs show `shr-modelshop` access only  
+- [ ] Email sent and received successfully
+
+---
+
+## Appendix
+
+**Related Documents:**  
+- [Account Creation SOP v3.1](#)  
+- [Modelshop ACL Export Archive](#)  
+- [Teams Activation Logs](#)  
+
+**Responsible Teams:**  
+- InfraOps: Account and Group Setup  
+- SecOps: Audit & Logging  
+- End-User Services: OneDrive/SharePoint Migration
+
+-------------------------------------------------------------------------------------------------------------------------------------
+
