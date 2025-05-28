@@ -2,8 +2,7 @@
 # Williams F1 | Enhanced AD User Discovery
 # File: /scripts/ad-user-discovery.ps1
 # Author: Curtis-Davidson & Urbantek
-# Version: 2025.7.1
-# Purpose: Full Active Directory enumeration for a given user, CAB export-ready
+# Version: 2025.7.2
 # =============================================
 
 param (
@@ -12,12 +11,12 @@ param (
 
 # === Logging & Export Setup ===
 $ts = Get-Date -Format 'yyyyMMdd_HHmmss'
-$exportDir = "$PSScriptRoot\..\exports\$Username"
-$logFile   = "$exportDir\log_$ts.txt"
-$csvFile   = "$exportDir\ad_user_summary_$ts.csv"
-$jsonFile  = "$exportDir\ad_user_summary_$ts.json"
-$mdFile    = "$exportDir\ad_user_summary_$ts.md"
-$htmlFile  = "$exportDir\ad_user_summary_$ts.html"
+$exportDir = Join-Path $PSScriptRoot "..\exports\$Username"
+$logFile   = Join-Path $exportDir "log_$ts.txt"
+$csvFile   = Join-Path $exportDir "ad_user_summary_$ts.csv"
+$jsonFile  = Join-Path $exportDir "ad_user_summary_$ts.json"
+$mdFile    = Join-Path $exportDir "ad_user_summary_$ts.md"
+$htmlFile  = Join-Path $exportDir "ad_user_summary_$ts.html"
 
 New-Item -Path $exportDir -ItemType Directory -Force | Out-Null
 
@@ -26,15 +25,15 @@ function Log {
         [string]$Message,
         [ValidateSet("INFO", "WARN", "ERROR", "SUCCESS")] [string]$Level = "INFO"
     )
-    $ts = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
-    $entry = "[$Level] $ts :: $Message"
+    $timestamp = Get-Date -Format 'yyyy-MM-dd HH:mm:ss'
+    $entry = "[$Level] $timestamp :: $Message"
     Write-Host $entry
     Add-Content -Path $logFile -Value $entry
 }
 
 # === Module Check ===
 if (-not (Get-Module -ListAvailable -Name ActiveDirectory)) {
-    Log "Missing module 'ActiveDirectory' (RSAT)." "ERROR"
+    Log "Missing module 'ActiveDirectory' (RSAT required)" "ERROR"
     exit 1
 }
 Import-Module ActiveDirectory
@@ -48,15 +47,17 @@ try {
     exit 2
 }
 
-# === Collect Metadata ===
-$groups = (Get-ADUser $Username -Properties MemberOf).MemberOf | ForEach-Object {
+# === Group Membership ===
+$groups = Get-ADUser $Username -Properties MemberOf | Select-Object -ExpandProperty MemberOf | ForEach-Object {
     (Get-ADGroup $_ -ErrorAction SilentlyContinue).Name
 }
+
+# === OU Breakdown ===
 $ouPath = $user.DistinguishedName -replace '^CN=.*?,', ''
 $ouComponents = ($ouPath -split ',') -replace '^OU=',''
 $ouFull = ($ouComponents -join ' > ')
 
-# === ACL Discovery ===
+# === ACL Summary ===
 $acls = Get-Acl -Path ("AD:\$($user.DistinguishedName)")
 $aclDetails = $acls.Access | ForEach-Object {
     [PSCustomObject]@{
@@ -68,17 +69,17 @@ $aclDetails = $acls.Access | ForEach-Object {
     }
 }
 
-# === GPO Discovery via OU (Recursive) ===
-$ouObject = Get-ADObject -Identity "LDAP://$ouPath" -Properties distinguishedName -ErrorAction SilentlyContinue
-$gpoLinks = if ($ouObject) {
-    Get-GPInheritance -Target $ouObject.DistinguishedName -ErrorAction SilentlyContinue | Select-Object -ExpandProperty GpoLinks
-} else { @() }
-
-$gpoNames = $gpoLinks | ForEach-Object {
-    "$($_.DisplayName) (Enabled: $($_.Enabled))"
+# === GPO Discovery (Fallback OU Recursion) ===
+$ouDN = ($user.DistinguishedName -split ',', 2)[1]
+$gpoNames = @()
+try {
+    $gpoLinks = Get-GPInheritance -Target $ouDN -ErrorAction SilentlyContinue | Select-Object -ExpandProperty GpoLinks
+    $gpoNames = $gpoLinks | ForEach-Object { "$($_.DisplayName) (Enabled: $($_.Enabled))" }
+} catch {
+    Log "GPO Inheritance failed for OU: $ouDN" "WARN"
 }
 
-# === Build Output Object ===
+# === Build Result Object ===
 $result = [PSCustomObject]@{
     Timestamp        = $ts
     Username         = $user.SamAccountName
@@ -93,15 +94,15 @@ $result = [PSCustomObject]@{
     ACLs             = $aclDetails
 }
 
-# === Export: CSV ===
+# === Export CSV ===
 $result | Select-Object Username,DisplayName,Email,OU,Enabled,LastLogon |
         Export-Csv -Path $csvFile -Encoding UTF8 -NoTypeInformation
 
-# === Export: JSON ===
+# === Export JSON ===
 $result | ConvertTo-Json -Depth 5 | Set-Content -Path $jsonFile -Encoding UTF8
 
-# === Export: Markdown ===
-@"
+# === Export Markdown ===
+$mdContent = @"
 # AD Discovery Report – $Username
 
 **Timestamp:** $ts
@@ -115,43 +116,50 @@ $result | ConvertTo-Json -Depth 5 | Set-Content -Path $jsonFile -Encoding UTF8
 - **Last Logon**: $($result.LastLogon)
 
 ## Groups
-$(($groups | ForEach-Object { "- $_" }) -join "`n")
+$($groups | ForEach-Object { "- $_" } | Out-String)
 
 ## Linked GPOs
-$(($gpoNames | ForEach-Object { "- $_" }) -join "`n")
+$($gpoNames | ForEach-Object { "- $_" } | Out-String)
 
 ## ACL Summary
 | Identity | Type | Rights | Inherited | ObjectType |
 |----------|------|--------|-----------|------------|
 $($aclDetails | ForEach-Object {
     "| $($_.Identity) | $($_.Type) | $($_.Rights) | $($_.Inherited) | $($_.ObjectType) |"
-} -join "`n")
-"@ | Out-File -FilePath $mdFile -Encoding UTF8
+} | Out-String)
+"@
+$mdContent | Set-Content -Path $mdFile -Encoding UTF8
 
-# === Export: HTML ===
+# === Export HTML ===
 $html = @"
 <!DOCTYPE html>
 <html><head><meta charset='utf-8'>
 <title>AD User Report – $Username</title>
-<style>body {font-family:Segoe UI;background:#f4f4f4;padding:20px;} table{border-collapse:collapse;width:100%} th,td{border:1px solid #ccc;padding:8px}</style>
-</head><body>
+<style>
+body { font-family: Segoe UI; background: #f4f4f4; padding: 20px; }
+table { border-collapse: collapse; width: 100%; }
+th, td { border: 1px solid #ccc; padding: 8px; }
+</style></head><body>
 <h2>AD Discovery Report – $Username</h2>
 <p><b>Timestamp:</b> $ts</p>
+
 <h3>Groups</h3><ul>
-$($groups | ForEach-Object { "<li>$_</li>" } -join "`n")
+$($groups | ForEach-Object { "<li>$_</li>" } | Out-String)
 </ul>
+
 <h3>Linked GPOs</h3><ul>
-$($gpoNames | ForEach-Object { "<li>$_</li>" } -join "`n")
+$($gpoNames | ForEach-Object { "<li>$_</li>" } | Out-String)
 </ul>
+
 <h3>ACL Summary</h3>
 <table><tr><th>Identity</th><th>Type</th><th>Rights</th><th>Inherited</th><th>ObjectType</th></tr>
 $($aclDetails | ForEach-Object {
     "<tr><td>$($_.Identity)</td><td>$($_.Type)</td><td>$($_.Rights)</td><td>$($_.Inherited)</td><td>$($_.ObjectType)</td></tr>"
-})
+} | Out-String)
 </table>
 </body></html>
 "@
-$html | Out-File -FilePath $htmlFile -Encoding UTF8
+$html | Set-Content -Path $htmlFile -Encoding UTF8
 
 # === Completion ===
 Log "AD Discovery complete for $Username" "SUCCESS"
