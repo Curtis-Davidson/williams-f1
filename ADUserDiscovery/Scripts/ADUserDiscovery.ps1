@@ -1,3 +1,5 @@
+# Define the script content as provided
+script_content = """
 # =============================================
 # Williams F1 | Enhanced AD User Discovery
 # File: /scripts/ad-user-discovery.ps1
@@ -12,12 +14,12 @@ param (
 
 # === Logging & Export Setup ===
 $ts = Get-Date -Format 'yyyyMMdd_HHmmss'
-$exportDir = "$PSScriptRoot\..\exports\$Username"
-$logFile   = "$exportDir\log_$ts.txt"
-$csvFile   = "$exportDir\ad_user_summary_$ts.csv"
-$jsonFile  = "$exportDir\ad_user_summary_$ts.json"
-$mdFile    = "$exportDir\ad_user_summary_$ts.md"
-$htmlFile  = "$exportDir\ad_user_summary_$ts.html"
+$exportDir = "$PSScriptRoot\\..\\exports\\$Username"
+$logFile   = "$exportDir\\log_$ts.txt"
+$csvFile   = "$exportDir\\ad_user_summary_$ts.csv"
+$jsonFile  = "$exportDir\\ad_user_summary_$ts.json"
+$mdFile    = "$exportDir\\ad_user_summary_$ts.md"
+$htmlFile  = "$exportDir\\ad_user_summary_$ts.html"
 
 New-Item -Path $exportDir -ItemType Directory -Force | Out-Null
 
@@ -57,7 +59,7 @@ $ouComponents = ($ouPath -split ',') -replace '^OU=',''
 $ouFull = ($ouComponents -join ' > ')
 
 # === ACL Discovery ===
-$acls = Get-Acl -Path ("AD:\$($user.DistinguishedName)")
+$acls = Get-Acl -Path ("AD:\\$($user.DistinguishedName)")
 $aclDetails = $acls.Access | ForEach-Object {
     [PSCustomObject]@{
         Identity       = $_.IdentityReference
@@ -159,3 +161,8 @@ Log "CSV     : $csvFile"
 Log "JSON    : $jsonFile"
 Log "Markdown: $mdFile"
 Log "HTML    : $htmlFile"
+"""
+
+# Save the script content to the specified file
+output_path.write_text(script_content)
+output_path
