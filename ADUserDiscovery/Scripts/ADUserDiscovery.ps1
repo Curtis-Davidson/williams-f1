@@ -1,24 +1,28 @@
-# =============================================
-# Williams F1 | Enhanced AD User Discovery
-# File: /ADUserDiscovery/Scripts/ADUserDiscovery.ps1
+# ==============================================================================
+# Williams F1 | Forensic AD User Discovery – Rule 6 Compliant
+# File: /scripts/ad-user-discovery.ps1
 # Author: Curtis-Davidson & Urbantek
-# Version: 2025.7.3
-# =============================================
+# Version: 2025.7.4
+# ==============================================================================
+# PURPOSE:
+#   Enterprise-grade Active Directory discovery for audit, tribunal, or cyber
+#   investigation use. Outputs CSV, JSON, Markdown, and HTML formats with
+#   CAB/GitHub project metadata and export traceability.
+# ==============================================================================
 
 param (
-    [Parameter(Mandatory)][string]$Username,
-    [switch]$SimulateDisable
+    [Parameter(Mandatory)][string]$Username
 )
 
-# === Logging & Export Setup ===
-$ts = Get-Date -Format 'yyyyMMdd_HHmmss'
-$exportDir = Join-Path $PSScriptRoot "..\exports\$Username"
-$logFile   = Join-Path $exportDir "log_$ts.txt"
-$csvFile   = Join-Path $exportDir "ad_user_summary_$ts.csv"
-$jsonFile  = Join-Path $exportDir "ad_user_summary_$ts.json"
-$mdFile    = Join-Path $exportDir "ad_user_summary_$ts.md"
-$htmlFile  = Join-Path $exportDir "ad_user_summary_$ts.html"
-$metaFile  = Join-Path $exportDir "meta_project.json"
+# === [1] Environment Setup ===
+$ts         = Get-Date -Format 'yyyyMMdd_HHmmss'
+$exportDir  = Join-Path $PSScriptRoot "..\exports\$Username"
+$logFile    = Join-Path $exportDir "log_$ts.txt"
+$csvFile    = Join-Path $exportDir "ad_user_summary_$ts.csv"
+$jsonFile   = Join-Path $exportDir "ad_user_summary_$ts.json"
+$mdFile     = Join-Path $exportDir "ad_user_summary_$ts.md"
+$htmlFile   = Join-Path $exportDir "ad_user_summary_$ts.html"
+$metaFile   = Join-Path $exportDir "meta_project.json"
 
 New-Item -Path $exportDir -ItemType Directory -Force | Out-Null
 
@@ -33,14 +37,25 @@ function Log {
     Add-Content -Path $logFile -Value $entry
 }
 
-# === Module Check ===
+# === [2] CAB Metadata Injection ===
+$metadata = [PSCustomObject]@{
+    Project      = "Remediate Generic Account Risk @WF1"
+    CaseID       = "P-135901"
+    'AD Object'  = $Username
+    Timestamp    = $ts
+    Type         = "Generic Account Discovery Export"
+    CreatedBy    = "ADUserDiscovery.ps1 v2025.7.4"
+}
+$metadata | ConvertTo-Json -Depth 3 | Set-Content -Path $metaFile -Encoding UTF8
+
+# === [3] ActiveDirectory Module Load ===
 if (-not (Get-Module -ListAvailable -Name ActiveDirectory)) {
     Log "Missing module 'ActiveDirectory' (RSAT required)" "ERROR"
     exit 1
 }
 Import-Module ActiveDirectory
 
-# === User Lookup ===
+# === [4] Discover User Object ===
 try {
     $user = Get-ADUser -Identity $Username -Properties * -ErrorAction Stop
     Log "User located: $($user.SamAccountName)"
@@ -49,17 +64,15 @@ try {
     exit 2
 }
 
-# === Group Membership ===
+# === [5] Collect Metadata ===
 $groups = Get-ADUser $Username -Properties MemberOf | Select-Object -ExpandProperty MemberOf | ForEach-Object {
     (Get-ADGroup $_ -ErrorAction SilentlyContinue).Name
 }
 
-# === OU Breakdown ===
-$ouPath = $user.DistinguishedName -replace '^CN=.*?,', ''
+$ouPath       = $user.DistinguishedName -replace '^CN=.*?,', ''
 $ouComponents = ($ouPath -split ',') -replace '^OU=',''
-$ouFull = ($ouComponents -join ' > ')
+$ouFull       = ($ouComponents -join ' > ')
 
-# === ACL Discovery ===
 $acls = Get-Acl -Path ("AD:\$($user.DistinguishedName)")
 $aclDetails = $acls.Access | ForEach-Object {
     [PSCustomObject]@{
@@ -71,26 +84,17 @@ $aclDetails = $acls.Access | ForEach-Object {
     }
 }
 
-# === GPO Discovery ===
+# === [6] GPO Inheritance ===
 $ouDN = ($user.DistinguishedName -split ',', 2)[1]
 $gpoNames = @()
 try {
     $gpoLinks = Get-GPInheritance -Target $ouDN -ErrorAction SilentlyContinue | Select-Object -ExpandProperty GpoLinks
     $gpoNames = $gpoLinks | ForEach-Object { "$($_.DisplayName) (Enabled: $($_.Enabled))" }
 } catch {
-    Log "GPO Inheritance lookup failed for OU: $ouDN" "WARN"
+    Log "GPO Inheritance failed for OU: $ouDN" "WARN"
 }
 
-# === Simulation Warning (What would break if disabled) ===
-if ($SimulateDisable) {
-    Log "Simulation: You requested a dry-run disable check" "INFO"
-    Log "Groups impacting critical systems:" "INFO"
-    $groups | Where-Object { $_ -match 'Admin|Critical|Remote|Delegation|VDI' } | ForEach-Object {
-        Log " -> $($_)" "WARN"
-    }
-}
-
-# === Build Export Object ===
+# === [7] Build Final Object ===
 $result = [PSCustomObject]@{
     Timestamp         = $ts
     Username          = $user.SamAccountName
@@ -103,26 +107,29 @@ $result = [PSCustomObject]@{
     Groups            = $groups
     GPOs              = $gpoNames
     ACLs              = $aclDetails
-    Notes             = "Tagged for: Remediate Generic Account Risk @WF1 | P-135901"
-    SimulateDisable   = $SimulateDisable.IsPresent
 }
 
-# === Export: CSV ===
+# === [8] Export CSV ===
 $result | Select-Object Username,DisplayName,Email,OU,Enabled,LastLogon |
         Export-Csv -Path $csvFile -Encoding UTF8 -NoTypeInformation
 
-# === Export: JSON ===
+# === [9] Export JSON ===
 $result | ConvertTo-Json -Depth 5 | Set-Content -Path $jsonFile -Encoding UTF8
 
-# === Export: Markdown ===
+# === [10] Export Markdown with CAB Header ===
 $mdContent = @"
+---
+project: Remediate Generic Account Risk @WF1
+case_id: P-135901
+object: $Username
+generated: $ts
+generated_by: ADUserDiscovery.ps1 v2025.7.4
+---
+
 # AD Discovery Report – $Username
 
 **Timestamp:** $ts
 **OU Path:** $ouFull
-**CAB Ref:** P-135901
-**Project:** Remediate Generic Account Risk @WF1
-**Simulate Disable Mode:** $($SimulateDisable.IsPresent)
 
 ## Basic Info
 - **Username**: $($result.Username)
@@ -146,22 +153,24 @@ $($aclDetails | ForEach-Object {
 "@
 $mdContent | Set-Content -Path $mdFile -Encoding UTF8
 
-# === Export: HTML ===
+# === [11] Export HTML with Metadata Block ===
 $html = @"
 <!DOCTYPE html>
 <html><head><meta charset='utf-8'>
+<meta name='project' content='Remediate Generic Account Risk @WF1'>
+<meta name='case_id' content='P-135901'>
+<meta name='generated_by' content='ADUserDiscovery.ps1 v2025.7.4'>
+<meta name='username' content='$Username'>
+<meta name='timestamp' content='$ts'>
 <title>AD User Report – $Username</title>
 <style>
 body { font-family: Segoe UI; background: #f4f4f4; padding: 20px; }
 table { border-collapse: collapse; width: 100%; }
 th, td { border: 1px solid #ccc; padding: 8px; }
-</style></head><body>
+</style>
+</head><body>
 <h2>AD Discovery Report – $Username</h2>
 <p><b>Timestamp:</b> $ts</p>
-<p><b>Project:</b> Remediate Generic Account Risk @WF1</p>
-<p><b>CAB Ref:</b> P-135901</p>
-<p><b>OU Path:</b> $ouFull</p>
-<p><b>Simulate Disable:</b> $($SimulateDisable.IsPresent)</p>
 
 <h3>Groups</h3><ul>
 $($groups | ForEach-Object { "<li>$_</li>" } | Out-String)
@@ -181,20 +190,7 @@ $($aclDetails | ForEach-Object {
 "@
 $html | Set-Content -Path $htmlFile -Encoding UTF8
 
-# === Project Metadata (Optional) ===
-$meta = [PSCustomObject]@{
-    Project       = "WilliamsF1"
-    CAB_Ref       = "P-135901"
-    Purpose       = "Remediation & Audit of Generic AD Account Usage"
-    Author        = "Curtis-Davidson"
-    Exports       = @($csvFile, $jsonFile, $mdFile, $htmlFile)
-    Simulation    = $SimulateDisable.IsPresent
-    Timestamp     = $ts
-    TargetUser    = $Username
-}
-$meta | ConvertTo-Json -Depth 4 | Set-Content -Path $metaFile -Encoding UTF8
-
-# === Completion ===
+# === [12] Final Logs ===
 Log "AD Discovery complete for $Username" "SUCCESS"
 Log "CSV     : $csvFile"
 Log "JSON    : $jsonFile"
