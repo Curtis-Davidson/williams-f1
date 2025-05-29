@@ -1,0 +1,28 @@
+{
+  "project": "WilliamsF1",
+  "control_id": "P-135901",
+  "audit_subject": "ModelShop",
+  "created_by": "Curtis-Davidson",
+  "version": "2025.7.2",
+  "timestamp": "2025-05-29T12:00:00Z",
+  "features": [
+    "ACL Inspection",
+    "MFA Status",
+    "OU+GPO Enumeration",
+    "Disable Simulation Mode",
+    "HTML/CSV/MD Export",
+    "Markdown CAB Format"
+  ],
+  "execution": {
+    "entry": "Scripts/ADUserDiscovery.ps1",
+    "make_target": "run-user-discovery",
+    "simulate_disable": true,
+    "interactive": false
+  },
+  "outputs": [
+    "CSV",
+    "JSON",
+    "Markdown",
+    "HTML"
+  ]
+}
