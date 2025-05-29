@@ -1,0 +1,103 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_style = space
+indent_size = 4
+tab_width = 4
+insert_final_newline = false
+max_line_length = 120
+ij_continuation_indent_size = 8
+ij_formatter_tags_enabled = true
+ij_formatter_on_tag = @formatter:on
+ij_formatter_off_tag = @formatter:off
+ij_smart_tabs = false
+ij_visual_guides =
+ij_wrap_on_typing = false
+
+# ========== JSON / JSONC ==========
+
+[{*.json,*.jsonc}]
+indent_size = 2
+ij_json_array_wrapping = split_into_lines
+ij_json_keep_blank_lines_in_code = 0
+ij_json_keep_indents_on_empty_lines = false
+ij_json_keep_line_breaks = true
+ij_json_keep_trailing_comma = false
+ij_json_object_wrapping = split_into_lines
+ij_json_property_alignment = do_not_align
+ij_json_space_after_colon = true
+ij_json_space_after_comma = true
+ij_json_space_before_colon = false
+ij_json_space_before_comma = false
+ij_json_spaces_within_braces = false
+ij_json_spaces_within_brackets = false
+ij_json_wrap_long_lines = false
+
+# ========== Markdown ==========
+
+[{*.md,*.markdown}]
+ij_markdown_force_one_space_after_blockquote_symbol = true
+ij_markdown_force_one_space_after_header_symbol = true
+ij_markdown_force_one_space_after_list_bullet = true
+ij_markdown_force_one_space_between_words = true
+ij_markdown_format_tables = true
+ij_markdown_insert_quote_arrows_on_wrap = true
+ij_markdown_keep_indents_on_empty_lines = false
+ij_markdown_keep_line_breaks_inside_text_blocks = true
+ij_markdown_max_lines_around_block_elements = 1
+ij_markdown_max_lines_around_header = 1
+ij_markdown_max_lines_between_paragraphs = 1
+ij_markdown_min_lines_around_block_elements = 1
+ij_markdown_min_lines_around_header = 1
+ij_markdown_min_lines_between_paragraphs = 1
+ij_markdown_wrap_text_if_long = true
+ij_markdown_wrap_text_inside_blockquotes = true
+
+# ========== PowerShell ==========
+
+[{*.ps1,*.psd1,*.psm1}]
+max_line_length = 115
+ij_powershell_block_brace_style = next_line
+ij_powershell_class_brace_style = next_line
+ij_powershell_else_on_new_line = true
+ij_powershell_finally_on_new_line = true
+ij_powershell_catch_on_new_line = true
+ij_powershell_spaces_within_braces = true
+ij_powershell_space_before_if_parentheses = true
+ij_powershell_space_before_while_parentheses = true
+ij_powershell_space_before_switch_parentheses = true
+ij_powershell_space_before_method_parentheses = false
+ij_powershell_keep_line_breaks = true
+ij_powershell_keep_blank_lines_in_code = 2
+ij_powershell_keep_simple_blocks_in_one_line = false
+ij_powershell_wrap_long_lines = false
+
+# ========== HTML ==========
+
+[{*.html,*.htm}]
+ij_html_add_new_line_before_tags = body,div,p,form,h1,h2,h3
+ij_html_align_attributes = true
+ij_html_align_text = false
+ij_html_attribute_wrap = normal
+ij_html_keep_blank_lines = 2
+ij_html_keep_indents_on_empty_lines = false
+ij_html_keep_line_breaks = true
+ij_html_keep_line_breaks_in_text = true
+ij_html_inline_tags = a,b,i,span,img,strong,em
+ij_html_enforce_quotes = false
+ij_html_quote_style = double
+ij_html_space_inside_empty_tag = false
+
+# ========== YAML ==========
+
+[{*.yml,*.yaml}]
+indent_size = 2
+ij_yaml_align_values_properties = do_not_align
+ij_yaml_keep_indents_on_empty_lines = false
+ij_yaml_keep_line_breaks = true
+ij_yaml_sequence_on_new_line = false
+ij_yaml_space_before_colon = false
+ij_yaml_spaces_within_braces = true
+ij_yaml_spaces_within_brackets = true
