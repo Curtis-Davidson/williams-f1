@@ -1,7 +1,7 @@
 # ==========================================================
 # MODULE: Williams F1 Workstation Discovery Core
 # Path: /lib/workstation-core.ps1
-# Author: Curtis-Davidson & Urbantek
+# Author: Paul R Davidson & Urbantek
 # ==========================================================
 
 # --- Get-InstalledApplications ---

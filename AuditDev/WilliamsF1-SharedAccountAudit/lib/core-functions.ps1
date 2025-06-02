@@ -1,7 +1,7 @@
 # =============================================
 # Williams F1 Shared Account Audit – Core Functions
 # File Path: /lib/core-functions.ps1
-# Author: Curtis-Davidson & Urbantek
+# Author: Paul R Davidson & Urbantek
 # Version: 2025.6.4
 # =============================================
 

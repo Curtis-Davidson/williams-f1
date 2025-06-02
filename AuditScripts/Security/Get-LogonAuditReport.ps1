@@ -4,7 +4,7 @@
 #              over the last 30 days, showing key details such as
 #              username, logon type, source IP, elevation status.
 #              Outputs to CSV and HTML for compliance and audit.
-# Author: Curtis-Davidson for WilliamsF1 | Urbantek
+# Author: Paul R Davidson for WilliamsF1 | Urbantek
 # ---------------------------------------------------------------
 
 # C:\AuditScripts\Security\Get-LogonAuditReport.ps1

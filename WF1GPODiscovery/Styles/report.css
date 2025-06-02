@@ -1,0 +1,5 @@
+body { font-family: "Segoe UI", sans-serif; margin: 2em; line-height: 1.6; }
+h1, h2, h3 { color: #004B8D; }
+code, pre { background: #f0f0f0; padding: 0.3em; }
+summary { font-weight: bold; cursor: pointer; color: #004B8D; }
+details { margin-bottom: 1em; }

@@ -2,7 +2,7 @@
 # Inject MetaData JSON Generator – Forensic Export Tagging
 # File     : /modules/inject-meta.ps1
 # Version  : 2025.7.4
-# Author   : Curtis-Davidson & Urbantek
+# Author   : Paul R Davidson & Urbantek
 # Purpose  : Auto-generate .meta.json for CAB, GitHub & Audit trace
 # ===========================================================
 
