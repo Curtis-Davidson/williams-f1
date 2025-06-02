@@ -1,0 +1,32 @@
+body {
+    font-family: 'Segoe UI', sans-serif;
+    background-color: #f7f9fc;
+    color: #333;
+    padding: 2rem;
+}
+h1 {
+    color: #004B8D; /* Williams Blue */
+}
+form {
+    margin: 1rem 0;
+}
+select, button {
+    font-size: 1rem;
+    padding: 0.5rem;
+    margin-right: 0.5rem;
+}
+#json-data, #md-data {
+    margin-top: 2rem;
+    padding: 1rem;
+    background: #fff;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+.markdown-content table {
+    width: 100%;
+    border-collapse: collapse;
+}
+.markdown-content th, .markdown-content td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
