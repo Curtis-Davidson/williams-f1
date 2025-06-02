@@ -1,0 +1,12 @@
+$indexPath = Join-Path $exportBase "ReportLinks\index.txt"
+$indexContent = @"
+# Report Index – $(Get-Date -Format "yyyy-MM-dd HH:mm")
+
+- Markdown: https://<your-org>.github.io/<repo>/wf1_gpo_summary_$ts.md
+- HTML: https://<sharepoint-url>/WF1GPODiscovery/Results/wf1_gpo_summary_$ts.html
+- PDF: https://<sharepoint-url>/WF1GPODiscovery/Results/wf1_gpo_summary_$ts.pdf
+
+"@
+$indexDir = Split-Path $indexPath
+if (-not (Test-Path $indexDir)) { New-Item $indexDir -ItemType Directory | Out-Null }
+$indexContent | Set-Content $indexPath -Encoding UTF8

@@ -1,154 +1,157 @@
-# ==========================================================
-# Williams F1 | GPO Discovery Module – Refined v2025.6.3
+# ======================================================
+# Williams F1 | GPO Discovery Module – Enhanced v2025.6.4
 # File: /WF1GPODiscovery/wf1-gpo-discovery.ps1
 # Author: Paul R Davidson & Urbantek
-# Purpose: Discover GPOs, extract settings, link/OU coverage
-# Output: JSON Summary, HTML Dashboard, CSV Breakdown, GPO Archive
-# ==========================================================
+# Purpose: Enumerate, summarise, and export GPO data
+# Output: JSON + HTML (Collapsible) + Markdown + CSV
+# ======================================================
 
 Import-Module GroupPolicy
+Import-Module ActiveDirectory
 
-# === Timestamp and Output Paths ===
+# === Setup Paths & Timestamps ===
 $ts = Get-Date -Format 'yyyyMMdd_HHmmss'
-$root = "$PSScriptRoot\Results"
-$jsonOut     = Join-Path $root "wf1_gpo_summary_$ts.json"
-$htmlOut     = Join-Path $root "wf1_gpo_summary_$ts.html"
-$csvOut      = Join-Path $root "wf1_gpo_dashboard_$ts.csv"
-$archiveDir  = Join-Path $root "html_reports_$ts"
+$exportBase   = "$PSScriptRoot\Results"
+$htmlArchive  = Join-Path $exportBase "html_reports_$ts"
+$jsonOut      = Join-Path $exportBase "wf1_gpo_summary_$ts.json"
+$htmlOut      = Join-Path $exportBase "wf1_gpo_summary_$ts.html"
+$csvOut       = Join-Path $exportBase "wf1_gpo_dashboard_$ts.csv"
+$mdOut        = Join-Path $exportBase "wf1_gpo_summary_$ts.md"
 
-# === Ensure Required Directories Exist ===
-@($root, $archiveDir) | ForEach-Object {
-    if (-not (Test-Path $_)) {
-        New-Item -Path $_ -ItemType Directory | Out-Null
-    }
+# === Create Needed Folders ===
+@($exportBase, $htmlArchive) | ForEach-Object {
+    if (-not (Test-Path $_)) { New-Item -Path $_ -ItemType Directory | Out-Null }
 }
 
-# === Init
-$gpoSummary = @()
-$dashboard = @{}
-$linkedOUs = @{}
 Write-Host "[INFO] Pulling all GPOs in AD domain..." -ForegroundColor Cyan
-$gpos = Get-GPO -All
+$gpos        = Get-GPO -All
+$ous         = Get-ADOrganizationalUnit -Filter * -Properties gPLink
+$gpoSummary  = @()
+$dashboard   = @{}
+$linkedOUs   = @{}
 
+# === Main GPO Enumeration Loop ===
 foreach ($gpo in $gpos) {
-    try {
-        $xmlRaw   = Get-GPOReport -Guid $gpo.Id -ReportType Xml -ErrorAction Stop
-        $htmlRaw  = Get-GPOReport -Guid $gpo.Id -ReportType Html -ErrorAction Stop
-        $xml      = [xml]$xmlRaw
-    } catch {
-        Write-Warning "Failed to process GPO: $($gpo.DisplayName)"
-        continue
-    }
+    $xmlReport = Get-GPOReport -Guid $gpo.Id -ReportType Xml
+    $htmlReport = Get-GPOReport -Guid $gpo.Id -ReportType Html
+    $xml = [xml]$xmlReport
 
-    # === Save Full HTML Archive ===
-    $safeName = $gpo.DisplayName -replace '[^a-zA-Z0-9_\-]', '_'
-    $htmlFile = Join-Path $archiveDir "$safeName.html"
-    $htmlRaw | Out-File -FilePath $htmlFile -Encoding UTF8
+    $safeName = $gpo.DisplayName -replace '[^a-zA-Z0-9\-]', '_'
+    $htmlPath = Join-Path $htmlArchive "$safeName.html"
+    $htmlReport | Out-File -Encoding utf8 -FilePath $htmlPath
 
-    # === Group Settings Summary ===
-    $settings = @()
-    if ($xml.GPO.Computer.ExtensionData) {
-        $settings += $xml.GPO.Computer.ExtensionData.Extension | ForEach-Object { "Computer: $($_.Name)" }
-    }
-    if ($xml.GPO.User.ExtensionData) {
-        $settings += $xml.GPO.User.ExtensionData.Extension | ForEach-Object { "User: $($_.Name)" }
-    }
+    $settings = $xml.GPO.Computer.ExtensionData | ForEach-Object { $_.Name }
+    $linkedThisGpo = @()
 
-    # === Dashboard Summary
-    foreach ($type in $settings) {
-        if ($type) {
-            if (-not $dashboard.ContainsKey($type)) {
-                $dashboard[$type] = 1
-            } else {
-                $dashboard[$type]++
-            }
+    foreach ($ou in $ous) {
+        if ($ou.gPLink -and $ou.gPLink -match $gpo.Id.Guid) {
+            $linkedOUs[$ou.DistinguishedName] = $true
+            $linkedThisGpo += $ou.DistinguishedName
         }
     }
 
-    # === Linked OUs
-    $links = Get-GPOLink -Guid $gpo.Id -Domain $gpo.DomainName -ErrorAction SilentlyContinue
-    if ($links) {
-        foreach ($l in $links) {
-            $linkedOUs[$l.Target] = $true
-        }
-    }
-
-    # === Security Filtering Summary
-    $security = (Get-GPPermissions -Guid $gpo.Id -All -ErrorAction SilentlyContinue |
-            Where-Object { $_.Permission -match "GpoApply" }) |
+    $securityFilter = (Get-GPPermissions -Guid $gpo.Id -All -ErrorAction SilentlyContinue) |
+            Where-Object { $_.Permission -match "GpoApply" } |
             Select-Object -ExpandProperty Trustee
 
-    # === Summary Entry
+    foreach ($type in $settings) {
+        if ($type) {
+            $dashboard[$type] = $dashboard[$type] + 1
+        }
+    }
+
     $gpoSummary += [PSCustomObject]@{
         Name          = $gpo.DisplayName
         GUID          = $gpo.Id
         Owner         = $gpo.Owner
         Created       = $gpo.CreationTime
         Modified      = $gpo.ModificationTime
-        LinkedOUs     = ($links.Count)
-        SecurityScope = ($security -join ", ")
+        LinkedOUs     = $linkedThisGpo.Count
+        SecurityScope = ($securityFilter -join ", ")
         Settings      = ($settings -join ", ")
-        HTMLReport    = $htmlFile
+        HTMLReport    = $htmlPath
     }
 }
 
-# === OU Coverage Summary
-Write-Host "[INFO] Scanning OUs for GPO coverage..." -ForegroundColor Cyan
-$allOUs = Get-ADOrganizationalUnit -Filter * | Select-Object -ExpandProperty DistinguishedName
+# === OU Coverage Reporting ===
+Write-Host "[INFO] Detecting OUs without GPOs..." -ForegroundColor Cyan
+$allOUs   = $ous | Select-Object -ExpandProperty DistinguishedName
 $noGpoOUs = $allOUs | Where-Object { -not $linkedOUs.ContainsKey($_) }
 
-# === Export JSON Summary ===
-$exportBlock = @{
+# === Output JSON ===
+$exportData = @{
     Timestamp = $ts
     Summary   = $gpoSummary
     NoGpoOUs  = $noGpoOUs
 }
-$exportBlock | ConvertTo-Json -Depth 5 | Set-Content -Path $jsonOut -Encoding UTF8
+$exportData | ConvertTo-Json -Depth 5 | Set-Content -Path $jsonOut -Encoding UTF8
 
-# === Export Dashboard CSV ===
-$dashboard.GetEnumerator() | Sort-Object Name |
-        Export-Csv -Path $csvOut -NoTypeInformation -Encoding UTF8
+# === Output CSV ===
+$dashboard.GetEnumerator() | Sort-Object Name | Export-Csv -Path $csvOut -NoTypeInformation -Encoding UTF8
 
-# === Build and Export HTML Summary ===
+# === Output HTML Summary (with collapsible sections) ===
 $html = @"
 <!DOCTYPE html>
 <html><head><meta charset="utf-8">
 <title>Williams F1 – GPO Dashboard</title>
 <style>
-body { font-family: Segoe UI, sans-serif; background: #f9f9f9; padding: 20px; color: #222; }
-h1, h2 { color: #004b8d; }
-table { border-collapse: collapse; width: 100%; margin-top: 20px; }
-th, td { border: 1px solid #ccc; padding: 8px; }
-th { background: #004b8d; color: white; }
-tr:nth-child(even) { background: #f1f1f1; }
-</style></head><body>
+body { font-family: Segoe UI, sans-serif; background: #f4f4f4; padding: 20px; color: #333; }
+h1, h2 { color: #004B8D; }
+details { margin-top: 10px; background: #fff; border: 1px solid #ccc; padding: 10px; }
+summary { font-weight: bold; font-size: 1.1em; cursor: pointer; }
+table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+th, td { border: 1px solid #aaa; padding: 8px; }
+th { background-color: #004B8D; color: white; }
+tr:nth-child(even) { background: #eef3f9; }
+</style>
+</head><body>
 <h1>Williams F1 – Group Policy Summary</h1>
-<p><strong>Generated:</strong> $(Get-Date -Format "yyyy-MM-dd HH:mm:ss")</p>
+<p><b>Generated:</b> $(Get-Date)</p>
 
-<h2>Settings Breakdown by Category</h2>
-<table><tr><th>Setting Category</th><th>Count</th></tr>
+<details open><summary>Dashboard Summary</summary>
+<table><tr><th>Category</th><th>Count</th></tr>
 "@
 
 foreach ($entry in $dashboard.GetEnumerator() | Sort-Object Name) {
     $html += "<tr><td>$($entry.Name)</td><td>$($entry.Value)</td></tr>"
 }
+$html += "</table></details>"
 
-$html += @"
-</table>
-<h2>OUs Without GPO Links</h2>
-<ul>
-"@
-
+$html += "<details><summary>OUs Without GPO Links</summary><ul>"
 foreach ($ou in $noGpoOUs) {
     $html += "<li>$ou</li>"
 }
+$html += "</ul></details></body></html>"
 
-$html += "</ul></body></html>"
 $html | Set-Content -Path $htmlOut -Encoding UTF8
 
-# === Final Summary
-Write-Host "`n[SUCCESS] GPO Discovery Complete" -ForegroundColor Green
-Write-Host " → JSON Summary     : $jsonOut"
-Write-Host " → HTML Dashboard   : $htmlOut"
-Write-Host " → CSV Breakdown    : $csvOut"
-Write-Host " → GPO HTML Archive : $archiveDir\*.html"
+# === Output GitHub Markdown Summary ===
+$md = @"
+# Williams F1 – Group Policy Report
+
+**Generated:** $(Get-Date)
+
+##  Dashboard Summary
+| Category | Count |
+|----------|-------|
+"@
+foreach ($entry in $dashboard.GetEnumerator() | Sort-Object Name) {
+    $md += "| $($entry.Name) | $($entry.Value) |`n"
+}
+
+$md += @"
+
+##  OUs Without Linked GPOs
+"@
+foreach ($ou in $noGpoOUs) {
+    $md += "- $ou`n"
+}
+$md | Set-Content -Path $mdOut -Encoding UTF8
+
+# === Completion ===
+Write-Host "`n[SUCCESS] GPO Discovery Complete"
+Write-Host " JSON Summary     : $jsonOut"
+Write-Host " Dashboard CSV    : $csvOut"
+Write-Host " HTML Summary     : $htmlOut"
+Write-Host " Markdown Report  : $mdOut"
+Write-Host " HTML Archive     : $htmlArchive\*.html"
