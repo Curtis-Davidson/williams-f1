@@ -1,25 +1,27 @@
-# =============================================
-# Williams F1 | Enterprise AD User Discovery
-# File: /scripts/ad-user-discovery.ps1
+# =========================================================
+# Williams F1 | Enterprise AD User Discovery (Class-based)
+# File: /scripts/ADUserDiscovery.ps1
 # Author: Paul R Davidson & Urbantek
-# Version: 2025.7.4
-# =============================================
+# Version: 2025.8.0
+# =========================================================
 
 param (
     [Parameter(Mandatory)][string]$Username
 )
 
-# === Logging & Export Setup ===
+# === Setup & Logging ===
 $ts = Get-Date -Format 'yyyyMMdd_HHmmss'
 $exportDir = Join-Path $PSScriptRoot "..\exports\$Username"
+New-Item -Path $exportDir -ItemType Directory -Force | Out-Null
+
 $logFile   = Join-Path $exportDir "log_$ts.txt"
 $csvFile   = Join-Path $exportDir "ad_user_summary_$ts.csv"
 $jsonFile  = Join-Path $exportDir "ad_user_summary_$ts.json"
 $mdFile    = Join-Path $exportDir "ad_user_summary_$ts.md"
 $htmlFile  = Join-Path $exportDir "ad_user_summary_$ts.html"
+$diffFile  = Join-Path $exportDir "diff_summary.md"
 $metaFile  = Join-Path $exportDir "meta_$ts.json"
-
-New-Item -Path $exportDir -ItemType Directory -Force | Out-Null
+$cacheFile = Join-Path $exportDir "last_snapshot.json"
 
 function Log {
     param (
@@ -32,7 +34,7 @@ function Log {
     Add-Content -Path $logFile -Value $entry
 }
 
-# === Metadata Injection ===
+# === Metadata Export ===
 $meta = @{
     timestamp   = $ts
     user_input  = $Username
@@ -43,69 +45,117 @@ $meta = @{
 }
 $meta | ConvertTo-Json -Depth 3 | Set-Content -Path $metaFile -Encoding UTF8
 
-# === Module Check ===
+# === Prerequisite Check ===
 if (-not (Get-Module -ListAvailable -Name ActiveDirectory)) {
     Log "Missing module 'ActiveDirectory' (RSAT required)" "ERROR"
     exit 1
 }
 Import-Module ActiveDirectory
 
-# === Lookup User ===
+# === Define ADUserProfile Class ===
+class ADUserProfile {
+    [string]$Username
+    [string]$SID
+    [string]$DisplayName
+    [string]$Email
+    [string]$OU
+    [bool]$Enabled
+    [datetime]$LastLogon
+    [string]$LogonScript
+    [string]$ProfilePath
+    [bool]$FSLogixDetected
+    [string[]]$Groups
+    [string[]]$GPOs
+    [object[]]$ACLs
+
+    ADUserProfile([pscustomobject]$raw) {
+        $this.Username         = $raw.Username
+        $this.SID              = $raw.SID
+        $this.DisplayName      = $raw.DisplayName
+        $this.Email            = $raw.Email
+        $this.OU               = $raw.OU
+        $this.Enabled          = $raw.Enabled
+        $this.LastLogon        = $raw.LastLogon
+        $this.LogonScript      = $raw.LogonScript
+        $this.ProfilePath      = $raw.ProfilePath
+        $this.FSLogixDetected  = $raw.FSLogixDetected
+        $this.Groups           = $raw.Groups
+        $this.GPOs             = $raw.GPOs
+        $this.ACLs             = $raw.ACLs
+    }
+
+    [string[]] CompareGroups([ADUserProfile]$other) {
+        return Compare-Object -ReferenceObject $this.Groups -DifferenceObject $other.Groups -PassThru
+    }
+
+    [string[]] CompareGPOs([ADUserProfile]$other) {
+        return Compare-Object -ReferenceObject $this.GPOs -DifferenceObject $other.GPOs -PassThru
+    }
+
+    [string[]] CompareOU([ADUserProfile]$other) {
+        if ($this.OU -ne $other.OU) { return @("OU changed from '$($other.OU)' to '$($this.OU)'") }
+        return @()
+    }
+
+    [string[]] CompareACLs([ADUserProfile]$other) {
+        $oldACLs = $other.ACLs | ConvertTo-Json -Depth 5
+        $newACLs = $this.ACLs  | ConvertTo-Json -Depth 5
+        if ($oldACLs -ne $newACLs) { return @("ACLs changed") }
+        return @()
+    }
+}
+
+# === Pull AD Data ===
 try {
     $user = Get-ADUser -Identity $Username -Properties * -ErrorAction Stop
-    Log "User located: $($user.SamAccountName)"
+    Log "User found: $($user.SamAccountName)"
 } catch {
     Log "User not found: $Username" "ERROR"
     exit 2
 }
 
-# === Group Membership ===
+$ouPath = $user.DistinguishedName -replace '^CN=.*?,', ''
+$ouFull = ($ouPath -split ',') -replace '^OU='''',''' -join ' > '
+$sid = (New-Object System.Security.Principal.NTAccount($user.SamAccountName)).Translate([System.Security.Principal.SecurityIdentifier]).Value
+$fslogixProfilePath = "\\fslogix\profiles\$Username"
+$profileExists = Test-Path $fslogixProfilePath
+
 $groups = Get-ADUser $Username -Properties MemberOf | Select-Object -ExpandProperty MemberOf | ForEach-Object {
     (Get-ADGroup $_ -ErrorAction SilentlyContinue).Name
 }
 
-# === OU Breakdown ===
-$ouPath = $user.DistinguishedName -replace '^CN=.*?,', ''
-$ouComponents = ($ouPath -split ',') -replace '^OU=',''
-$ouFull = ($ouComponents -join ' > ')
-
-# === ACL Summary ===
-$acls = Get-Acl -Path ("AD:\$($user.DistinguishedName)")
-$aclDetails = $acls.Access | ForEach-Object {
-    [PSCustomObject]@{
-        Identity       = $_.IdentityReference
-        Type           = $_.AccessControlType
-        Rights         = $_.ActiveDirectoryRights
-        Inherited      = $_.IsInherited
-        ObjectType     = $_.ObjectType
-    }
-}
-
-# === GPO Discovery (Fallback OU Recursion) ===
-$ouDN = ($user.DistinguishedName -split ',', 2)[1]
-$gpoNames = @()
 try {
-    $gpoLinks = Get-GPInheritance -Target $ouDN -ErrorAction SilentlyContinue | Select-Object -ExpandProperty GpoLinks
+    $ouDN = ($user.DistinguishedName -split ',', 2)[1]
+    $gpoLinks = Get-GPInheritance -Target $ouDN -ErrorAction Stop | Select-Object -ExpandProperty GpoLinks
     $gpoNames = $gpoLinks | ForEach-Object { "$($_.DisplayName) (Enabled: $($_.Enabled))" }
 } catch {
-    Log "GPO Inheritance failed for OU: $ouDN" "WARN"
+    $gpoNames = @()
+    Log "Failed to get GPO inheritance for $ouDN" "WARN"
 }
 
-# === SID Detection ===
-$sid = (New-Object System.Security.Principal.NTAccount($user.SamAccountName)).Translate([System.Security.Principal.SecurityIdentifier]).Value
+$aclDetails = @()
+try {
+    $userAcl = Get-Acl -Path ("AD:\" + $user.DistinguishedName)
+    $aclDetails = $userAcl.Access | ForEach-Object {
+        [PSCustomObject]@{
+            Identity    = $_.IdentityReference
+            Type        = $_.AccessControlType
+            Rights      = $_.ActiveDirectoryRights
+            Inherited   = $_.IsInherited
+            ObjectType  = $_.ObjectType
+        }
+    }
+} catch {
+    Log "ACL extraction failed" "WARN"
+}
 
-# === FSLogix & Profile Info ===
-$fslogixProfilePath = "\\fslogix\profiles\$Username"
-$profileExists = Test-Path $fslogixProfilePath
-
-# === Build Result Object ===
-$result = [PSCustomObject]@{
+# === Build and Export Object ===
+$rawResult = [PSCustomObject]@{
     Timestamp        = $ts
     Username         = $user.SamAccountName
     SID              = $sid
     DisplayName      = $user.DisplayName
     Email            = $user.EmailAddress
-    DistinguishedName= $user.DistinguishedName
     OU               = $ouFull
     Enabled          = $user.Enabled
     LastLogon        = $user.LastLogonDate
@@ -116,13 +166,33 @@ $result = [PSCustomObject]@{
     GPOs             = $gpoNames
     ACLs             = $aclDetails
 }
-
-# === Export CSV ===
-$result | Select-Object Username,DisplayName,Email,OU,Enabled,LastLogon,LogonScript,ProfilePath,FSLogixDetected |
-        Export-Csv -Path $csvFile -Encoding UTF8 -NoTypeInformation
+$currentProfile = [ADUserProfile]::new($rawResult)
 
 # === Export JSON ===
-$result | ConvertTo-Json -Depth 5 | Set-Content -Path $jsonFile -Encoding UTF8
+$currentProfile | ConvertTo-Json -Depth 5 | Set-Content -Path $jsonFile -Encoding UTF8
+
+# === Compare with Previous Run (if exists) ===
+if (Test-Path $cacheFile) {
+    $previous = Get-Content -Path $cacheFile | ConvertFrom-Json
+    $oldProfile = [ADUserProfile]::new($previous)
+    $diffs = @()
+    $diffs += $currentProfile.CompareGroups($oldProfile)
+    $diffs += $currentProfile.CompareGPOs($oldProfile)
+    $diffs += $currentProfile.CompareACLs($oldProfile)
+    $diffs += $currentProfile.CompareOU($oldProfile)
+
+    if ($diffs.Count -gt 0) {
+        Log "Changes detected since last run." "WARN"
+        $diffs | Set-Content -Path $diffFile -Encoding UTF8
+    } else {
+        Log "No differences detected since last snapshot."
+    }
+}
+$currentProfile | ConvertTo-Json -Depth 5 | Set-Content -Path $cacheFile -Encoding UTF8
+
+# === Export CSV ===
+$currentProfile | Select-Object Username,DisplayName,Email,OU,Enabled,LastLogon,LogonScript,ProfilePath,FSLogixDetected |
+        Export-Csv -Path $csvFile -Encoding UTF8 -NoTypeInformation
 
 # === Export Markdown ===
 $mdContent = @"
@@ -134,15 +204,15 @@ $mdContent = @"
 **OU Path:** $ouFull
 
 ## Basic Info
-- **Username**: $($result.Username)
-- **Display Name**: $($result.DisplayName)
-- **Email**: $($result.Email)
-- **Enabled**: $($result.Enabled)
-- **SID**: $($result.SID)
-- **Last Logon**: $($result.LastLogon)
-- **Logon Script**: $($result.LogonScript)
-- **Profile Path**: $($result.ProfilePath)
-- **FSLogix Detected**: $($result.FSLogixDetected)
+- **Username**: $($currentProfile.Username)
+- **Display Name**: $($currentProfile.DisplayName)
+- **Email**: $($currentProfile.Email)
+- **Enabled**: $($currentProfile.Enabled)
+- **SID**: $($currentProfile.SID)
+- **Last Logon**: $($currentProfile.LastLogon)
+- **Logon Script**: $($currentProfile.LogonScript)
+- **Profile Path**: $($currentProfile.ProfilePath)
+- **FSLogix Detected**: $($currentProfile.FSLogixDetected)
 
 ## Groups
 $($groups | ForEach-Object { "- $_" } | Out-String)
@@ -181,15 +251,15 @@ ul { padding-left: 20px; }
 
 <h2>Basic Info</h2>
 <ul>
-<li><b>Username:</b> $($result.Username)</li>
-<li><b>Display Name:</b> $($result.DisplayName)</li>
-<li><b>Email:</b> $($result.Email)</li>
-<li><b>SID:</b> $($result.SID)</li>
-<li><b>Enabled:</b> $($result.Enabled)</li>
-<li><b>Last Logon:</b> $($result.LastLogon)</li>
-<li><b>Logon Script:</b> $($result.LogonScript)</li>
-<li><b>Profile Path:</b> $($result.ProfilePath)</li>
-<li><b>FSLogix Detected:</b> $($result.FSLogixDetected)</li>
+<li><b>Username:</b> $($currentProfile.Username)</li>
+<li><b>Display Name:</b> $($currentProfile.DisplayName)</li>
+<li><b>Email:</b> $($currentProfile.Email)</li>
+<li><b>SID:</b> $($currentProfile.SID)</li>
+<li><b>Enabled:</b> $($currentProfile.Enabled)</li>
+<li><b>Last Logon:</b> $($currentProfile.LastLogon)</li>
+<li><b>Logon Script:</b> $($currentProfile.LogonScript)</li>
+<li><b>Profile Path:</b> $($currentProfile.ProfilePath)</li>
+<li><b>FSLogix Detected:</b> $($currentProfile.FSLogixDetected)</li>
 </ul>
 
 <h2>Groups</h2>
