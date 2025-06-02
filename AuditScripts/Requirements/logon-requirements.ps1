@@ -1,7 +1,7 @@
 # ==========================================================
 # Williams F1 - Pre-Run Requirements Check for Logon Audit
 # File: /Requirements/logon-requirements.ps1
-# Author: Curtis-Davidson & Urbantek
+# Author: Paul R Davidson & Urbantek
 # ==========================================================
 
 $log = "$PSScriptRoot\..\Logs\logon-requirements.log"

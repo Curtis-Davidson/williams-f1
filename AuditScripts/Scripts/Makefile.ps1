@@ -2,7 +2,7 @@
 # Williams F1 - Makefile Wrapper
 # File: /Scripts/Makefile.ps1
 # Description: Trigger logon audit or other modules cleanly
-# Author: Curtis-Davidson & Urbantek
+# Author: Paul R Davidson & Urbantek
 # ==========================================================
 
 param (

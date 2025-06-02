@@ -2,7 +2,7 @@
 # Williams F1 | ADUserDiscovery Makefile Runner
 # File: Makefile.ps1
 # Version: 2025.7.2
-# Author: Curtis-Davidson & Urbantek
+# Author: Paul R Davidson & Urbantek
 # Purpose: Standardised entry-point for Rule 6 tasks
 # =============================================
 

@@ -1,7 +1,7 @@
 # =============================================
 # Williams F1 Full AD Audit – Shared Account Discovery
 # File: /scripts/williamsf1-ad-audit.ps1
-# Author: Curtis-Davidson & Urbantek
+# Author: Paul R Davidson & Urbantek
 # Version: 2025.6.4
 # =============================================
 
