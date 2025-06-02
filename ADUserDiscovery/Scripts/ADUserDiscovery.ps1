@@ -1,7 +1,7 @@
 # =========================================================
 # Williams F1 | Enterprise AD User Discovery (Class-based)
 # File: /scripts/ADUserDiscovery.ps1
-# Author: Paul R Davidson & Urbantek
+# Author: Paul R Davidson
 # Version: 2025.8.0
 # =========================================================
 
