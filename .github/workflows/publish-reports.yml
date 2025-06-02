@@ -1,8 +1,13 @@
-  convert-md-to-pdf:
-    name: Convert Markdown to PDF
-    runs-on: ubuntu-latest
-    needs: deploy-to-pages
+name: Convert Markdown to PDF
 
+on:
+  push:
+    paths:
+      - 'WF1GPODiscovery/Results/*.md'
+
+jobs:
+  convert-and-publish:
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -22,7 +27,7 @@
 
       - name: Commit and push PDFs
         run: |
-          git config user.name "GPO Bot"
+          git config user.name "GPO_Bot"
           git config user.email "actions@github.com"
           git add WF1GPODiscovery/PDFs/*.pdf
           git commit -m "Auto-generate PDF reports from markdown"
