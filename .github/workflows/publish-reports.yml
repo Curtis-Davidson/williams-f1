@@ -3,7 +3,7 @@ name: Convert Markdown to PDF
 on:
   push:
     paths:
-      - 'WF1GPODiscovery/Results/*.md'
+      - '../../WF1GPODiscovery/results/*.md'
 
 jobs:
   convert-and-publish:
