@@ -14,7 +14,7 @@ from pathlib import Path
 
 # === CONFIGURATION ===
 NOTEBOOK_NAME = "ADUserReview.ipynb"
-EXPORTS_DIR = Path(__file__).parent.parent / "exports"
+EXPORTS_DIR = Path(__file__).resolve().parent.parent / "exports"
 
 # === VALIDATE ARGS ===
 if len(sys.argv) != 2:
@@ -38,10 +38,16 @@ json_file = json_files[0]
 print(f"[INFO] Found export: {json_file.name}")
 
 # === PATCH NOTEBOOK DYNAMICALLY (Inject Path) ===
-notebook_path = Path(__file__).parent / NOTEBOOK_NAME
+notebook_path = Path(__file__).resolve().parent / NOTEBOOK_NAME
 if not notebook_path.exists():
     print(f"[ERROR] Notebook not found: {notebook_path}")
     sys.exit(4)
+
+# Backup original notebook before overwrite (safety)
+backup_path = notebook_path.with_suffix(".bak.ipynb")
+if not backup_path.exists():
+    notebook_path.replace(backup_path)
+    notebook_path = backup_path.copy(notebook_path)
 
 with open(notebook_path, "r", encoding="utf-8") as f:
     nb = json.load(f)
