@@ -1,15 +1,16 @@
-# =========================================================
-# Williams F1 | Enterprise AD Group Discovery (Class-based)
+# ==================================================================
+# Williams F1 | Enterprise AD Group Discovery – Canonical Edition
 # File: /scripts/ADGroupDiscovery.ps1
-# Author: Paul R Davidson
-# Version: 2025.8.0
-# =========================================================
+# Author: Paul R Davidson & Urbantek
+# Version: 2025.9.0
+# Purpose: Department-agnostic AD group auditing with ACL diffing
+# ==================================================================
 
 param (
     [Parameter(Mandatory)][string]$GroupName
 )
 
-# === Setup ===
+# === Setup paths ===
 $ts = Get-Date -Format 'yyyyMMdd_HHmmss'
 $exportDir = Join-Path $PSScriptRoot "..\exports\$GroupName"
 New-Item -Path $exportDir -ItemType Directory -Force | Out-Null
@@ -32,7 +33,7 @@ function Log {
     Add-Content -Path $logFile -Value $line
 }
 
-# === Class: ADGroupProfile ===
+# === Define ADGroupProfile class ===
 class ADGroupProfile {
     [string]$GroupName
     [string]$Description
@@ -62,34 +63,46 @@ class ADGroupProfile {
     }
 }
 
-# === Import AD Module ===
-if (-not (Get-Module -ListAvailable -Name ActiveDirectory)) {
-    Log "Missing ActiveDirectory RSAT module" "ERROR"
+# === Pre-flight checks ===
+if (-not (Get-Command Get-ADGroup -ErrorAction SilentlyContinue)) {
+    Log "ActiveDirectory module not available. RSAT tools missing." "ERROR"
     exit 1
 }
-Import-Module ActiveDirectory
 
-# === Fetch Group Info ===
+# === Load AD module ===
+Import-Module ActiveDirectory -ErrorAction Stop
+
+# === Resolve Group ===
 try {
     $group = Get-ADGroup -Identity $GroupName -Properties * -ErrorAction Stop
-    Log "Group found: $GroupName"
+    Log "Found AD group: $GroupName"
 } catch {
     Log "Group not found: $GroupName" "ERROR"
     exit 2
 }
 
-# === Resolve Members Recursively ===
+# === Resolve members recursively with depth guard ===
 function Resolve-GroupMembers {
-    param ([string]$DN)
+    param (
+        [string]$DN,
+        [int]$MaxDepth = 5
+    )
     $members = @()
-    $queue = @($DN)
+    $queue = @(@{DN = $DN; Depth = 0})
+
     while ($queue.Count -gt 0) {
-        $current = $queue[0]
+        $item = $queue[0]
         $queue = $queue[1..($queue.Count - 1)]
-        $entries = Get-ADGroupMember -Identity $current -ErrorAction SilentlyContinue
+
+        if ($item.Depth -ge $MaxDepth) {
+            Log "Max depth reached: $($item.DN)" "WARN"
+            continue
+        }
+
+        $entries = Get-ADGroupMember -Identity $item.DN -ErrorAction SilentlyContinue
         foreach ($entry in $entries) {
             if ($entry.objectClass -eq "group") {
-                $queue += $entry.DistinguishedName
+                $queue += @{DN = $entry.DistinguishedName; Depth = $item.Depth + 1}
                 $members += "$($entry.Name) (Group)"
             } else {
                 $members += "$($entry.SamAccountName) (User)"
@@ -100,24 +113,32 @@ function Resolve-GroupMembers {
 }
 $resolvedMembers = Resolve-GroupMembers -DN $group.DistinguishedName
 
-# === Get ACLs ===
+# === Get ACLs (timeout-wrapped) ===
 $aclData = @()
 try {
-    $gacl = Get-Acl -Path ("AD:\" + $group.DistinguishedName)
-    $aclData = $gacl.Access | ForEach-Object {
-        [PSCustomObject]@{
-            Identity   = $_.IdentityReference
-            Rights     = $_.ActiveDirectoryRights
-            Type       = $_.AccessControlType
-            Inherited  = $_.IsInherited
-            ObjectType = $_.ObjectType
+    $aclPath = "AD:\" + $group.DistinguishedName
+    $job = Start-Job { param($p) Get-Acl -Path $p } -ArgumentList $aclPath
+    $completed = $job | Wait-Job -Timeout 5
+    if ($completed) {
+        $gacl = Receive-Job $job
+        $aclData = $gacl.Access | ForEach-Object {
+            [PSCustomObject]@{
+                Identity   = $_.IdentityReference
+                Rights     = $_.ActiveDirectoryRights
+                Type       = $_.AccessControlType
+                Inherited  = $_.IsInherited
+                ObjectType = $_.ObjectType
+            }
         }
+    } else {
+        Log "ACL query timed out. Skipping ACL data." "WARN"
     }
+    Remove-Job $job -Force
 } catch {
-    Log "Failed to retrieve ACLs for group" "WARN"
+    Log "ACL extraction failed." "WARN"
 }
 
-# === Construct Object ===
+# === Build profile object ===
 $rawGroup = [pscustomobject]@{
     GroupName   = $group.Name
     Description = $group.Description
@@ -129,7 +150,7 @@ $rawGroup = [pscustomobject]@{
 $currentProfile = [ADGroupProfile]::new($rawGroup)
 $currentProfile | ConvertTo-Json -Depth 5 | Set-Content -Path $jsonFile -Encoding UTF8
 
-# === Compare with Previous Snapshot ===
+# === Compare snapshot ===
 if (Test-Path $cacheFile) {
     $previous = Get-Content $cacheFile | ConvertFrom-Json
     $oldProfile = [ADGroupProfile]::new($previous)
@@ -138,10 +159,10 @@ if (Test-Path $cacheFile) {
     $diffs += $currentProfile.CompareACLs($oldProfile)
 
     if ($diffs.Count -gt 0) {
-        Log "Changes detected since last run" "WARN"
-        $diffs | Set-Content -Path $diffFile -Encoding UTF8
+        Log "Differences found since last snapshot." "WARN"
+        $diffs | ForEach-Object { "* $_" } | Set-Content -Path $diffFile -Encoding UTF8
     } else {
-        Log "No changes detected"
+        Log "No differences detected."
     }
 }
 $currentProfile | ConvertTo-Json -Depth 5 | Set-Content -Path $cacheFile -Encoding UTF8
@@ -196,5 +217,4 @@ $($aclData | ForEach-Object {
 "@
 $html | Set-Content -Path $htmlFile -Encoding UTF8
 
-# === Done ===
-Log "AD Group discovery complete for $GroupName" "SUCCESS"
+Log "AD Group Audit complete for $GroupName" "SUCCESS"
