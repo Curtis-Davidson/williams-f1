@@ -1,0 +1,17 @@
+Justification Summary: Pre-Implementation Discovery for Shared Account Cleanup
+
+The ADUserDiscovery.ps1 script was developed as a foundational control in the Shared Account Remediation Project to ensure operational continuity, minimise implementation risk, and uphold enterprise change governance standards. When remediating legacy, generic, or privileged user accounts in Active Directory, this script performs a comprehensive, read-only discovery of a user’s entire AD footprint before any changes are made—such as disabling, renaming, or deleting an account.
+
+It captures critical attributes including:
+	•	Group memberships
+	•	Applied Group Policy Objects (GPOs)
+	•	Delegated Active Directory ACLs
+	•	FSLogix profile linkage
+
+This ensures the implementation team can predict and prevent downstream impact, especially for accounts that underpin service access, GPO filtering, or role-based permissions.
+
+By producing structured, exportable reports in CSV, JSON, Markdown, and HTML, the script offers clear traceability, audit readiness, and CAB-compatible artefacts. It also supports stateful diffing, allowing the project team to compare current vs prior snapshots and detect configuration drift.
+
+⸻
+
+In summary, this discovery step is a critical risk mitigation and validation layer—transforming undocumented assumptions into concrete, actionable insight. It enables confident, evidence-based change with no unplanned outages, in alignment with ISO27001, Rule 6 compliance, and WilliamsF1-level governance standards.

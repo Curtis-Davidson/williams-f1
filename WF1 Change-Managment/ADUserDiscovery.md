@@ -1,113 +1,37 @@
-Markdown summary to describe and justify the ADUserDiscovery.ps1 script for formal CAB approval.
+## 1. Overview
 
-# CAB Submission – Active Directory User Discovery Tool
+### Purpose
 
-**Script Name:** `ADUserDiscovery.ps1`
-**Author:** Paul R Davidson
-**CAB Reference:** `P-135901`
-**Version:** `2025.8.0`
-**Repository:**  https://github.com/UrbantekDev/williams-f1
+Enterprise-grade Active Directory user audit tool that:
 
----
+- Performs security compliance checks
+- Generates comprehensive user profiles
+- Supports change tracking and risk assessment
+- Enables automated security reviews
 
-## Purpose
+### Core Features
 
-This PowerShell script performs a **complete enterprise-grade audit** of a specified Active Directory (AD) user, aligned
-to WF1 security policy and Rule 6 compliance.
+1. **AD Profile Analysis**
+    - Full attribute scanning
+    - Security context evaluation
+    - Profile path verification
+    - FSLogix integration
 
-It is designed to:
+2. **Security Assessment**
+    - Group membership audit
+    - GPO inheritance mapping
+    - ACL permission analysis
 
-- Identify **account anomalies**
-- Document **access rights**
-- Produce **exportable audit records**
-- Support risk mitigation for **generic, dormant, or privileged accounts**
+3. **Reporting System**
+    - Multi-format export (JSON/CSV/MD/HTML)
+    - Delta comparison
+    - Audit logging
+    - Historical tracking
 
----
+## 2. Technical Implementation ##
 
-## What the Script Does
-
-### 1. **Discovers full AD profile of a user**
-
-- Full AD attributes (`DisplayName`, `Email`, `LastLogon`, etc.)
-- SID resolution
-- Enabled/disabled state
-- ScriptPath & ProfilePath
-- FSLogix profile presence check
-
-### 2. **Enumerates Security Context**
-
-- **Group memberships**
-- **Linked GPOs** via `Get-GPInheritance`
-- **Direct ACLs** via `Get-Acl` (delegated or explicit rights)
-
-### 3. **Defines an `ADUserProfile` Class**
-
-- Allows for object-based handling
-- Supports **historical comparison** with previous snapshots
-- Enables **diff tracking**: groups, GPOs, OU, and ACLs
-
-### 4. **Outputs Multi-Format Reports**
-
-- `.json` for data pipelines
-- `.csv` for Excel/sorting
-- `.md` (Markdown) for GitHub reviews or CAB meeting packs
-- `.html` for visual clarity in browser/shareable UI
-- `.log` for all runtime steps and decisions
-
-### 5. **Supports Change Control Comparison**
-
-- If a prior snapshot exists, differences are logged
-- Delta report (`diff_summary.md`) shows what has changed
-- Ensures traceability for audit and rollback
-
----
-
-## Output Location
-
-All artefacts are written to:
-./exports//
-
-Each run is timestamped to prevent overwrites and maintain version history.
-
----
-
-## Justification
-
-| Factor                  | Detail                                                                |
-|-------------------------|-----------------------------------------------------------------------|
-| **Business Risk**       | Generic, shared, or stale AD accounts pose a lateral movement threat. |
-| **Security Mandate**    | Required for WF1 ISO27001 controls and privilege audits.              |
-| **Operational Benefit** | Generates full user posture in seconds; reproducible and exportable.  |
-| **CAB Readiness**       | Output directly feeds CAB-level reviews via Markdown & HTML export.   |
-
----
-
-## Risk Profile
-
-- **Low Operational Risk:** Read-only operations, no account modification.
-- **Zero Dependency Runtime:** Native PowerShell + RSAT (`ActiveDirectory` module).
-- **Rollback Not Required:** No write operations.
-- **Tested Accounts:** All tests run against dummy users in lower environment before production.
-
----
-
-## Next Steps
-
-An optional `ADUserReview.ipynb` Jupyter notebook is available for post-analysis tagging (Keep / Remove / CAB Review).
-This supports final decision-making before disabling/removing accounts.
-
----
-
-## Approval Request
-
-This script is **self-documenting, exportable, and Rule 6 compliant**.
-Requesting CAB approval to:
-
-- Schedule weekly audits of high-risk accounts
-- Integrate into `make audit-user username=...` CLI workflow
-- Link into CloudHealthLink for AI-driven identity reviews
-
-## Example Output Location
+The script `ADUserDiscovery.ps1` is a class-based PowerShell tool that performs a full audit of an individual Active Directory user account. It is designed to run in **read-only mode** with no modification to AD objects.
+##  Example Output Location
 
 By default, all outputs are written to:
 
@@ -117,24 +41,150 @@ By default, all outputs are written to:
 
 > Example: `../exports/FinanceUser01/`
 
-| File                               | Description                                            |
-|------------------------------------|--------------------------------------------------------|
-| `ad_user_summary_<timestamp>.json` | Full user object export (groups, GPOs, ACLs, metadata) |
-| `ad_user_summary_<timestamp>.csv`  | Flat summary for reporting and audit ingestion         |
-| `ad_user_summary_<timestamp>.md`   | Markdown report for CAB or engineer review             |
-| `ad_user_summary_<timestamp>.html` | Styled browser report                                  |
-| `diff_summary.md`                  | Change report vs last snapshot (group, GPO, ACL, OU)   |
-| `log_<timestamp>.txt`              | Execution log with INFO/WARN/SUCCESS entries           |
-| `meta_<timestamp>.json`            | Metadata for audit (invoker, timestamp, repo, ref)     |
-| `last_snapshot.json`               | Used for comparison in future runs (stateful diffing)  |
+| File                               | Description                                               |
+|------------------------------------|-----------------------------------------------------------|
+| `ad_user_summary_<timestamp>.json` | Full user object export (groups, GPOs, ACLs, metadata)    |
+| `ad_user_summary_<timestamp>.csv`  | Flat summary for reporting and audit ingestion            |
+| `ad_user_summary_<timestamp>.md`   | Markdown report for CAB or engineer review                |
+| `ad_user_summary_<timestamp>.html` | Styled browser report                                     |
+| `diff_summary.md`                  | Change report vs last snapshot (group, GPO, ACL, OU)      |
+| `log_<timestamp>.txt`              | Execution log with INFO/WARN/SUCCESS entries              |
+| `meta_<timestamp>.json`            | Metadata for audit (invoker, timestamp, repo, ref)        |
+| `last_snapshot.json`               | Used for comparison in future runs (stateful diffing)     |
 
-## Why This Script Is Safe in Production
 
-| Characteristic                     | Explanation                                                                                          |
-|------------------------------------|------------------------------------------------------------------------------------------------------|
-| **Read-only**                      | Uses `Get-ADUser`, `Get-ADGroup`, `Get-GPInheritance`, `Get-Acl`. No `Set-`, `New-`, `Remove-` used. |
-| **No Side Effects**                | Does not create, modify, move or delete any AD object. Purely observational.                         |
-| **Fails gracefully**               | If a user does not exist or is inaccessible, script exits cleanly with a warning.                    |
-| **Handles ACL errors**             | If ACLs cannot be retrieved due to permissions, logs a warning and proceeds.                         |
-| **No impact to shares or servers** | Only outputs files to `../exports/<Username>/` directory. No UNC paths touched.                      |
-| **No elevated AD rights needed**   | Can be run with Domain User privileges (read access to AD + ACLs only).                              |
+##  Why This Script Is Safe in Production
+
+|  Characteristic                   | Explanation                                                                 |
+|-----------------------------------|-----------------------------------------------------------------------------|
+| **Read-only**                     | Uses `Get-ADUser`, `Get-ADGroup`, `Get-GPInheritance`, `Get-Acl`. No `Set-`, `New-`, `Remove-` used. |
+| **No Side Effects**               | Does not create, modify, move or delete any AD object. Purely observational. |
+| **Fails gracefully**              | If a user does not exist or is inaccessible, script exits cleanly with a warning. |
+| **Handles ACL errors**            | If ACLs cannot be retrieved due to permissions, logs a warning and proceeds. |
+| **No impact to shares or servers** | Only outputs files to `../exports/<Username>/` directory. No UNC paths touched. |
+| **No elevated AD rights needed**  | Can be run with Domain User privileges (read access to AD + ACLs only).     |
+###  Key Technical Details
+
+- **Language**: PowerShell (Core & Windows compatible)
+- **Modules Required**: `ActiveDirectory` (RSAT tools must be installed)
+- **Input Parameter**:
+    - `Username` (SamAccountName of the user to audit)
+- **Output Directory**:
+    - `../exports/<Username>/`
+- **Exported Formats**:
+    - `CSV` – Summary of key attributes
+    - `JSON` – Full object structure for system integration
+    - `Markdown` – CAB-ready report format
+    - `HTML` – Styled version for browser viewing
+    - `Meta` – Metadata log for traceability
+    - `Diff` – Snapshot comparison to detect changes since last run
+
+---
+
+##  How to Run
+
+```powershell
+# Navigate to the scripts directory
+cd /scripts
+
+# Run the audit for a specific user
+.\ADUserDiscovery.ps1 -Username johndoe
+
+ 
+### Describe the Change
+This change introduces a **read-only PowerShell script (`ADUserDiscovery.ps1`)** designed to perform a **comprehensive Active Directory user account audit**. The script is executed prior to implementation phases (e.g., onboarding, privilege assignment, automation workflows, or account changes) to ensure the user's configuration is secure, expected, and compliant with internal controls.
+
+It captures and exports key user metadata, including:
+
+-  **Group Memberships** – Validates against expected RBAC design and detects privilege anomalies.
+-  **Organisational Unit (OU) Path** – Confirms account placement in the correct OU for GPO inheritance and policy scope.
+-  **Linked Group Policy Objects (GPOs)** – Reviews active policies linked to the user's OU, checking against security baselines.
+-  **Access Control Lists (ACLs)** – Captures delegated rights to the user object in AD.
+-  **FSLogix Profile Path Check** – Detects whether a cloud profile path exists for the user.
+-  **User Metadata** – Includes SID, display name, email, enabled state, last logon time, logon script, and profile path.
+
+All outputs are stored in timestamped JSON, Markdown, CSV, and HTML formats under:
+### Output Structure
+
+##  Implementation Plan – `ADUserDiscovery.ps1`
+
+This section outlines the structured implementation plan for deploying and using `ADUserDiscovery.ps1` in a production Active Directory environment.
+
+---
+
+###  Purpose
+
+To provide a **read-only audit mechanism** that validates **Active Directory user configurations** prior to group or access changes. This ensures confidence during change control processes by verifying:
+
+- Group memberships  
+- Linked GPOs  
+- ACLs and inherited permissions  
+- Last logon status and OU placement  
+- FSLogix and profile path presence
+
+---
+
+###  Step-by-Step Deployment
+
+#### 1. **Clone or Copy Script to Secure Location**
+
+```bash
+/scripts/ADUserDiscovery.ps1
+
+
+Recommended: Place inside a secured, version-controlled repository or script folder on your admin jump box or management server.
+
+2. Verify PowerShell Environment
+
+Ensure the RSAT AD PowerShell module is available:
+Get-Module -ListAvailable ActiveDirectory
+
+3. Run a Test Audit
+cd /scripts
+.\ADUserDiscovery.ps1 -Username testuser1
+
+	•	Output will appear under:
+
+../exports/testuser1/
+
+	•	Validate generated:
+	•	CSV, JSON, MD, HTML
+	•	ACL analysis and GPO links
+
+4. Integration into CAB or Change Process
+	•	Add as a required step for validating generic accounts or access changes.
+	•	Export the Markdown or HTML report and attach to CAB ticket.
+	•	Use the diff_summary.md to show config drift or audit deltas from previous runs.
+
+
+#  ADUserDiscovery.ps1 – Implementation & Usage Guide
+
+This guide explains how to implement and run the `ADUserDiscovery.ps1` script in a production environment. It is designed for safe, read-only auditing of Active Directory user accounts before implementing group, permission, or access changes.
+
+---
+
+##  Purpose
+
+The `ADUserDiscovery.ps1` script validates a user's **AD group memberships**, **OU**, **GPO links**, and **ACLs** prior to configuration changes. It ensures:
+
+- Accurate CAB documentation  
+- Reduced risk of misconfiguration  
+- Visibility into FSLogix and profile setup  
+- Historical comparison of user configuration drift  
+
+---
+
+##  Directory Structure
+
+```text
+/scripts/ADUserDiscovery.ps1
+/exports/<Username>/
+    ├── ad_user_summary_<timestamp>.csv
+    ├── ad_user_summary_<timestamp>.json
+    ├── ad_user_summary_<timestamp>.md
+    ├── ad_user_summary_<timestamp>.html
+    ├── diff_summary.md
+    ├── log_<timestamp>.txt
+    └── meta_<timestamp>.json
+
+

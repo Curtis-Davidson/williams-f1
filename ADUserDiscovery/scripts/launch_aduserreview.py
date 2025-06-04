@@ -6,10 +6,9 @@
 # Requires: Python 3.8+, pandas, jupyter
 """
 
-import os
-import sys
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 # === CONFIGURATION ===
@@ -57,7 +56,7 @@ for cell in nb["cells"]:
     if cell["cell_type"] == "code":
         for i, line in enumerate(cell["source"]):
             if "json_path =" in line:
-                cell["source"][i] = f"json_path = Path(r'{json_file}')\n"
+                cell["source"][i] = f"json_path = Path(r'{json_file.resolve()}')\n"
                 updated = True
 
 if updated:
