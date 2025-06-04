@@ -7,11 +7,12 @@
 # ===============================================================
 
 param (
-    [ValidateSet("workstation", "shareduser", "all", "diff", "schedule", "clean")]
+    [ValidateSet("workstation", "shareduser", "all", "diff", "schedule", "clean", "push", "export-md", "verify")]
     [string]$target = "all"
 )
 
 $base = $PSScriptRoot
+$root = Resolve-Path "$base\.."
 $ts = Get-Date -Format "dd-MM-yyyy HH:mm:ss"
 Write-Host "`n[MAKE] Running target: $target @ $ts" -ForegroundColor Green
 
@@ -34,6 +35,22 @@ switch ($target) {
         & "$base\williamsf1-diff-engine.ps1"
     }
 
+    "export-md" {
+        Write-Host "[EXPORT] Regenerating Markdown summaries..." -ForegroundColor Cyan
+        & "$base\export-markdown.ps1"
+    }
+
+    "verify" {
+        Write-Host "[VERIFY] Checking latest diff + audit snapshots..." -ForegroundColor Cyan
+        $jsons = Get-ChildItem "$root\exports" -Recurse -Filter *.json | Sort-Object LastWriteTime -Descending | Select-Object -First 2
+        if ($jsons.Count -lt 2) {
+            Write-Warning "[FAIL] Less than 2 audit snapshots found."
+        } else {
+            Write-Host "[OK] Found recent snapshots:" -ForegroundColor Green
+            $jsons | ForEach-Object { Write-Host "  - $($_.FullName)" }
+        }
+    }
+
     "schedule" {
         Write-Host "[TASK] Creating Task Scheduler Job: Daily Audit @ 04:00" -ForegroundColor Cyan
         $taskName = "WilliamsF1 Workstation Audit"
@@ -43,7 +60,17 @@ switch ($target) {
 
     "clean" {
         Write-Host "[CLEAN] Removing audit output files..." -ForegroundColor Yellow
-        Remove-Item "$base\..\outputs\*.csv", "$base\..\outputs\*.md", "$base\..\outputs\*.html", "$base\..\logs\*.txt" -Force -ErrorAction SilentlyContinue
+        Remove-Item "$root\outputs\*.csv", "$root\outputs\*.md", "$root\outputs\*.html", "$root\logs\*.txt" -Force -ErrorAction SilentlyContinue
+    }
+
+    "push" {
+        Write-Host "[GIT] Committing + tagging snapshot..." -ForegroundColor Cyan
+        Set-Location $root
+        git add .
+        $tag = "snapshot-" + (Get-Date -Format "yyyyMMdd-HHmmss")
+        git commit -m "Audit snapshot commit: $tag"
+        git tag -a $tag -m "Tagged snapshot: $tag"
+        git push origin main --tags
     }
 
     default {
