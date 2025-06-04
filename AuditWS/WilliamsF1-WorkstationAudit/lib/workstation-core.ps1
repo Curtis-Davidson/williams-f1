@@ -1,17 +1,16 @@
-# ==========================================================
+# =====================================================================
 # MODULE: Williams F1 Workstation Discovery Core
 # Path: /lib/workstation-core.ps1
 # Author: Paul R Davidson & Urbantek
-# ==========================================================
+# Version: 2025.6.4
+# Status: Rule 6 Compliant - Canonical
+# =====================================================================
 
 # --- Get-InstalledApplications ---
 function Get-InstalledApplications {
     <#
     .SYNOPSIS
-    Returns a list of installed applications from registry.
-
-    .DESCRIPTION
-    Enumerates 32-bit and 64-bit registry paths to capture all MSI and manual installs.
+    Enumerates installed applications from 32-bit and 64-bit registry locations.
 
     .OUTPUTS
     Array of PSCustomObject with Name, Version, Publisher, InstallDate.
@@ -21,8 +20,9 @@ function Get-InstalledApplications {
         'HKLM:\Software\WOW6432Node\Microsoft\Windows\CurrentVersion\Uninstall\*'
     )
 
+    $apps = @()
     foreach ($path in $paths) {
-        Get-ItemProperty -Path $path -ErrorAction SilentlyContinue | ForEach-Object {
+        $apps += Get-ItemProperty -Path $path -ErrorAction SilentlyContinue | ForEach-Object {
             [PSCustomObject]@{
                 Name        = $_.DisplayName
                 Version     = $_.DisplayVersion
@@ -31,13 +31,15 @@ function Get-InstalledApplications {
             }
         }
     }
+
+    return $apps | Where-Object { $null -ne $_.Name } | Sort-Object Name -Unique
 }
 
 # --- Get-MappedDrives ---
 function Get-MappedDrives {
     <#
     .SYNOPSIS
-    Returns currently mapped network drives.
+    Returns all mapped network drives.
 
     .OUTPUTS
     Array of PSCustomObject with DriveLetter, RemotePath.
@@ -54,7 +56,7 @@ function Get-MappedDrives {
 function Get-LoggedInUsers {
     <#
     .SYNOPSIS
-    Returns list of users logged in over last 30 days via Security log.
+    Parses the Security event log to find usernames who have logged in the last 30 days.
 
     .OUTPUTS
     Array of strings (usernames).
@@ -73,18 +75,33 @@ function Get-LoggedInUsers {
 function Get-UserRightsAssignments {
     <#
     .SYNOPSIS
-    Returns all user rights assignments (e.g., logon locally, shutdown system).
+    Returns user rights assignments by exporting the security policy.
+
+    .PARAMETER username
+    Optional - if specified, filters only relevant entries.
 
     .OUTPUTS
-    Hashtable of privileges and corresponding users/groups.
+    Hashtable of rights and assigned SIDs or usernames.
     #>
-    secedit /export /cfg "$env:TEMP\secedit.cfg" > $null
-    $lines = Get-Content "$env:TEMP\secedit.cfg" | Where-Object { $_ -like "Se*Privilege*" }
+    param ([string]$username)
+
+    $cfgFile = "$env:TEMP\secpol.cfg"
+    secedit /export /cfg $cfgFile > $null
+    $lines = Get-Content $cfgFile | Where-Object { $_ -like "Se*Privilege*" }
 
     $rights = @{}
     foreach ($line in $lines) {
         $key, $value = $line -split '='
-        $rights[$key.Trim()] = $value.Trim().Split(',')
+        $users = $value.Trim().Split(',') | Where-Object {
+            if ($username) {
+                $_ -match $username
+            } else {
+                $true
+            }
+        }
+        if ($users.Count -gt 0) {
+            $rights[$key.Trim()] = $users
+        }
     }
 
     return $rights
@@ -94,15 +111,16 @@ function Get-UserRightsAssignments {
 function Get-UserProfiles {
     <#
     .SYNOPSIS
-    Returns all local profiles with their size, last use, and SID.
+    Returns local user profiles with metadata.
 
     .OUTPUTS
-    Array of PSCustomObject.
+    Array of PSCustomObject with SID, Path, LastUse, IsRoaming, IsLoaded, UserName.
     #>
     Get-CimInstance -ClassName Win32_UserProfile | Where-Object { $_.LocalPath -like "C:\Users\*" } | ForEach-Object {
         [PSCustomObject]@{
             UserSID   = $_.SID
             Path      = $_.LocalPath
+            UserName  = $_.LocalPath.Split('\')[-1]
             LastUse   = $_.LastUseTime
             IsRoaming = $_.RoamingConfigured
             IsLoaded  = $_.Loaded
@@ -114,31 +132,66 @@ function Get-UserProfiles {
 function Get-ProfileState {
     <#
     .SYNOPSIS
-    Returns the state of a user profile (active, stale, roaming).
+    Describes profile status (Active, Inactive, Roaming, Stale).
 
     .PARAMETER ProfileObject
-    One object from Get-UserProfiles.
+    The profile object returned by Get-UserProfiles.
 
     .OUTPUTS
-    String describing state.
+    String
     #>
-    param (
-        [Parameter(Mandatory)]
-        $ProfileObject
-    )
+    param ([Parameter(Mandatory)] $ProfileObject)
 
     $ageDays = ((Get-Date) - $ProfileObject.LastUse).Days
 
     if ($ProfileObject.IsRoaming -eq $true) {
         return "Roaming Profile"
-    }
-    elseif ($ageDays -gt 90) {
+    } elseif ($ageDays -gt 90) {
         return "Stale Profile (>90 days)"
-    }
-    elseif ($ProfileObject.IsLoaded) {
+    } elseif ($ProfileObject.IsLoaded) {
         return "Active"
-    }
-    else {
+    } else {
         return "Inactive"
+    }
+}
+
+# --- Test-FSLogixProfilePresence ---
+function Test-FSLogixProfilePresence {
+    <#
+    .SYNOPSIS
+    Checks for FSLogix profile folder presence under AppData.
+
+    .PARAMETER username
+    Username to inspect.
+
+    .OUTPUTS
+    Boolean
+    #>
+    param ([string]$username)
+
+    $profilePath = "C:\Users\$username\AppData\Local\FSLogix"
+    return (Test-Path $profilePath)
+}
+
+# --- Get-GPOReportForUser ---
+function Get-GPOReportForUser {
+    <#
+    .SYNOPSIS
+    Generates GPO HTML report for a user. Returns status only.
+
+    .PARAMETER username
+    The username to test GPO for.
+
+    .OUTPUTS
+    String (✔️ / ❌)
+    #>
+    param ([string]$username)
+
+    $out = "$env:TEMP\gpresult-$username.html"
+    try {
+        gpresult /USER $username /H $out > $null 2>&1
+        if (Test-Path $out) { return "✔️" } else { return "❌" }
+    } catch {
+        return "❌"
     }
 }
