@@ -47,7 +47,7 @@ This is part of the wider **Williams F1 AD Governance Audit Framework** to maint
 explorer ..\exports\Finance-UK
 
 
-#  ADGroupDiscovery.ps1 – Run Instructions & Production Safety
+#  ADGroupAudit.ps1 – Run Instructions & Production Safety
 
 ##  How to Run This Script (Against Any AD Group)
 
