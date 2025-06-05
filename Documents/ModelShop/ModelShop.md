@@ -1,16 +1,16 @@
 Here is your step-by-step, exact method for creating a Shared Mailbox at Williams, written for a Help Desk engineer to follow precisely and fully compliant with WN-FR9041 in package-WN-v1.07.docx.
 
-🔧 Canonical Procedure: Create a Shared Mailbox
+ Canonical Procedure: Create a Shared Mailbox
 Role: Help Desk / IT Engineer
 Purpose: To provision a new Shared Mailbox compliant with Williams standards (v1.07)
 Reference: WN-FR9041 – Email Setup
 
-✅ 1. Confirm Pre-Checks
+ 1. Confirm Pre-Checks
 Before proceeding, ensure:
 
-🔲 Request is submitted via Service Desk using the official mailbox request template
+ Request is submitted via Service Desk using the official mailbox request template
 
-🔲 Business sponsor provided:
+ Business sponsor provided:
 
 Proposed mailbox name (e.g. modelshop@williamsf1.com)
 
@@ -20,18 +20,18 @@ Department/function owner
 
 List of authorised users (with Full Access and/or Send on Behalf)
 
-🔲 IT Security Manager has signed off the request
+ IT Security Manager has signed off the request
 
-📛 2. Naming Convention
+ 2. Naming Convention
 Use functional name only (no shr-, svc-, or other prefixes)
 
 Must clearly represent the business function
 
-✅ Valid: williamsav@williamsf1.com, modelshop@williamsf1.com
+ Valid: williamsav@williamsf1.com, modelshop@williamsf1.com
 
-❌ Invalid: shr-williamsav@williamsf1.com, helpdesk01@williamsf1.com
+ Invalid: shr-williamsav@williamsf1.com, helpdesk01@williamsf1.com
 
-⚙️ 3. PowerShell Command Set (EXO PowerShell)
+⚙ 3. PowerShell Command Set (EXO PowerShell)
 Open Exchange Online PowerShell:
 
 powershell
@@ -39,13 +39,13 @@ Copy
 Edit
 # Step 1: Connect to Exchange Online
 Connect-ExchangeOnline -UserPrincipalName your.admin@williamsf1.com
-📬 Create the Shared Mailbox
+ Create the Shared Mailbox
 powershell
 Copy
 Edit
 # Step 2: Create the Shared Mailbox
 New-Mailbox -Shared -Name "Modelshop Shared Mailbox" -DisplayName "Modelshop" -Alias "modelshop" -PrimarySmtpAddress "modelshop@williamsf1.com"
-👤 Assign Full Access & Send on Behalf
+ Assign Full Access & Send on Behalf
 powershell
 Copy
 Edit
@@ -58,9 +58,9 @@ Copy
 Edit
 # Step 4: Grant Send on Behalf rights
 Set-Mailbox -Identity "modelshop@williamsf1.com" -GrantSendOnBehalfTo "firstname.surname@williamsf1.com"
-⚠️ Do NOT set Send As rights unless authorised by the IT Security Manager.
+ Do NOT set Send As rights unless authorised by the IT Security Manager.
 
-📋 4. Document in AD
+ 4. Document in AD
 Update the AD object for audit traceability:
 
 Field	Value Example
@@ -71,7 +71,7 @@ Service Desk Ref	e.g. “WF1SD-1052”
 
 Update fields via ADUC or PowerShell (if delegated):
 
-🌐 5. Confirm Mailbox is Licence-Free
+ 5. Confirm Mailbox is Licence-Free
 Check that no licence has been assigned:
 
 powershell
@@ -80,9 +80,9 @@ Edit
 Get-Mailbox "modelshop@williamsf1.com" | Format-List RecipientTypeDetails,Licenses
 Expected output:
 RecipientTypeDetails : SharedMailbox
-Licenses : {} (Empty – ✅ licence-free)
+Licenses : {} (Empty –  licence-free)
 
-🧪 6. Testing Instructions
+ 6. Testing Instructions
 From any user granted access:
 
 Go to https://office.com
@@ -101,7 +101,7 @@ Can send email “on behalf of” shared mailbox
 
 Cannot send “as” the mailbox
 
-🔄 7. Maintenance & Expiry Policy
+ 7. Maintenance & Expiry Policy
 Password: Not applicable (Shared Mailboxes don’t require direct login)
 
 Expiry: Tracked via linked Service Desk request
@@ -120,7 +120,7 @@ Step	Task
 6	Verify access with user login
 7	Document and maintain compliance
 
-Would you like me to wrap this into a .ps1 script or create a Makefile.md entry as part of your automation standard?
+Wrap this into a .ps1 script or create a Makefile.md entry as part of your automation standard?
 
 
 
@@ -134,9 +134,7 @@ modelshop.docx
 Document
 Summarise the existing generic modelshop account and the list all the requirements for the new shr-modelshop in a method based for an engineer to implement.
 
-
-ChatGPT said:
-Here is a canonical summary and engineer-ready implementation plan for transitioning from the legacy modelshop Generic Account to the fully compliant shr-modelshop Shared Account model, based on the detailed governance in modelshop.docx and package-WN-v1.07.docx.
+Legacy modelshop Generic Account to the fully compliant shr-modelshop Shared Account model, based on the detailed governance in modelshop.docx and package-WN-v1.07.docx.
 
  Summary of the Existing Generic Account: modelshop
 Account ID: modelshop (FACTORY\modelshop)
