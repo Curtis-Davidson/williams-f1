@@ -31,7 +31,7 @@ username          = $Username
 exportTimestamp   = $timestamp
 gitVersion        = Get-GitTag
 cabReference      = Get-CurrentCABReference
-author            = "Curtis-Davidson"
+author            = "Paul R Davidson"
 project           = "WilliamsF1 Forensic AD Discovery"
 repository        = "https://github.com/UrbantekDev/CloudHealthLink"
 type              = "forensic-ad-audit"
@@ -42,4 +42,4 @@ format            = "Rule6-Compliant"
 $metaPath = Join-Path $ExportDir ".meta.json"
 $meta | ConvertTo-Json -Depth 4 | Set-Content -Path $metaPath -Encoding UTF8
 
-Write-Host "✅ Metadata injected at: $metaPath"
+Write-Host "Metadata injected at: $metaPath"

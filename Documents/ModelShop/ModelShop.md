@@ -31,7 +31,7 @@ Must clearly represent the business function
 
  Invalid: shr-williamsav@williamsf1.com, helpdesk01@williamsf1.com
 
-⚙ 3. PowerShell Command Set (EXO PowerShell)
+ 3. PowerShell Command Set (EXO PowerShell)
 Open Exchange Online PowerShell:
 
 powershell
