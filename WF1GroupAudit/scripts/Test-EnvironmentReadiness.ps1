@@ -1,72 +1,54 @@
-# ====================================================================
+# ===========================================================
 # Script: Test-EnvironmentReadiness.ps1
-# Author: Paul R Davidson & Urbantek
-# Purpose: Ensures environment is ready to run GroupDeepAudit.ps1
-# Location: /scripts/Test-EnvironmentReadiness.ps1
-# Usage: .\Test-EnvironmentReadiness.ps1 or via Makefile: make verify-env
-# ====================================================================
+# Purpose: Verifies that the system has the required modules
+# and environment readiness to run GroupDeepAudit.ps1 safely.
+# Author: Paul R Davidson (Urbantek)
+# ===========================================================
 
-Write-Host "`n[VERIFY] Starting environment dependency check..." -ForegroundColor Cyan
+function Test-EnvironmentReadiness {
 
-# --- Internal test wrapper ---
-function Test-Check {
-    param (
-        [string]$Description,
-        [scriptblock]$Test
-    )
+    $errors = @()
 
-    try {
-        if (& $Test) {
-            Write-Host "[OK] $Description" -ForegroundColor Green
-            return $true
-        } else {
-            Write-Host "[FAIL] $Description" -ForegroundColor Red
-            return $false
+    # === Check for RSAT AD Module ===
+    if (-not (Get-Command Get-ADUser -ErrorAction SilentlyContinue)) {
+        $errors += "Missing RSAT: Active Directory PowerShell module (Get-ADUser not found)."
+    }
+
+    # === Check for ActiveDirectory PSDrive (AD:\) ===
+    if (-not (Test-Path "AD:\") -and (Get-Module -Name ActiveDirectory -ListAvailable)) {
+        try {
+            Import-Module ActiveDirectory -ErrorAction Stop
+        } catch {
+            $errors += " ActiveDirectory module failed to import."
         }
+    }
+
+    # === Check for Git (optional) ===
+    if (-not (Get-Command git.exe -ErrorAction SilentlyContinue)) {
+        $errors += "Git CLI not found – versioning exports will be disabled."
+    }
+
+    # === Check Export Paths Writeable ===
+    $testPath = Join-Path $PSScriptRoot "..\exports\_test_write.txt"
+    try {
+        "test" | Out-File -FilePath $testPath -Encoding UTF8 -Force
+        Remove-Item $testPath -Force
     } catch {
-        Write-Host "[ERROR] $Description - $_" -ForegroundColor Red
+        $errors += " Cannot write to exports folder. Check permissions: $testPath"
+    }
+
+    # === Display Result ===
+    if ($errors.Count -eq 0) {
+        Write-Host "`n Environment is fully ready to run GroupDeepAudit.ps1" -ForegroundColor Green
+        return $true
+    } else {
+        Write-Host "`n Environment readiness failed:`n" -ForegroundColor Red
+        $errors | ForEach-Object { Write-Host $_ -ForegroundColor Yellow }
         return $false
     }
 }
 
-# --- Run required checks ---
-$results = @()
-
-$results += Test-Check "ActiveDirectory module is available" {
-    Get-Module -ListAvailable -Name ActiveDirectory | Out-Null
-}
-
-$results += Test-Check "Can resolve Get-ADGroup" {
-    Get-Command Get-ADGroup -ErrorAction SilentlyContinue | Out-Null
-}
-
-$results += Test-Check "Can resolve Get-ADGroupMember" {
-    Get-Command Get-ADGroupMember -ErrorAction SilentlyContinue | Out-Null
-}
-
-$results += Test-Check "Can resolve Get-Acl" {
-    Get-Command Get-Acl -ErrorAction SilentlyContinue | Out-Null
-}
-
-$results += Test-Check "Can write to ./exports" {
-    $testFile = ".\exports\__test__"
-    New-Item -Path $testFile -ItemType File -Force -ErrorAction Stop | Out-Null
-    Remove-Item $testFile -Force
-    $true
-}
-
-$results += Test-Check "Can write to ./results" {
-    $testFile = ".\results\__test__"
-    New-Item -Path $testFile -ItemType File -Force -ErrorAction Stop | Out-Null
-    Remove-Item $testFile -Force
-    $true
-}
-
-# --- Final result ---
-if ($results -contains $false) {
-    Write-Host "`n[!] Environment check failed. Please resolve above errors." -ForegroundColor Yellow
-    exit 1
-} else {
-    Write-Host "`n[✔] Environment is fully ready to run GroupDeepAudit.ps1" -ForegroundColor Green
-    exit 0
+# === Invoke if standalone ===
+if ($MyInvocation.InvocationName -eq '.') {
+    Test-EnvironmentReadiness
 }
