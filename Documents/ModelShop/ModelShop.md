@@ -110,7 +110,7 @@ Ownership: If the business sponsor leaves, must update Manager field
 
 Decommission if unused, with audit record
 
-💼 Summary
+ Summary
 Step	Task
 1	Confirm authorised request and naming
 2	Provision mailbox with New-Mailbox -Shared
@@ -191,7 +191,7 @@ Add-ADGroupMember -Identity "grp-modelshopRW" -Members "shr-modelshop"
 
 # Device Login Access Control Group
 Add-ADGroupMember -Identity "grp-modelshopLAC" -Members "shr-modelshop"
-3. 💻 Restrict Login Scope
+3.  Restrict Login Scope
    Ensure shr-modelshop is restricted to Device Category 8:
 
 powershell
@@ -294,7 +294,7 @@ powershell
 Copy
 Edit
 Set-ADUser -Identity "modelshop" -Description "Deprecated Generic Account. Replaced by shr-modelshop on 2025-05-20. Do not use."
-12. 📓 Document in AD
+12.  Document in AD
     Update shr-modelshop with:
 
 AD Field	Value
