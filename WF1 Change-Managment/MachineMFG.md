@@ -94,12 +94,12 @@
 
 ## C – Risk Assessment
 
-| Risk Ref | Description | Mitigation |
-|----------|-------------|------------|
-| R01 | Migration from legacy account may cause unexpected behaviour | Staged rollout and UAT validation |
-| R02 | Some apps may have hardcoded references to old accounts | Perform config validation and app testing |
-| R03 | Possible Teamcenter licence gaps | Review licensing before go-live |
-| R04 | Possible NX CAD/CAM licence mismatch | Confirm contract and entitlement before switch |
+| Risk Ref | Description                                                  | Mitigation                                     |
+|----------|--------------------------------------------------------------|------------------------------------------------|
+| R01      | Migration from legacy account may cause unexpected behaviour | Staged rollout and UAT validation              |
+| R02      | Some apps may have hardcoded references to old accounts      | Perform config validation and app testing      |
+| R03      | Possible Teamcenter licence gaps                             | Review licensing before go-live                |
+| R04      | Possible NX CAD/CAM licence mismatch                         | Confirm contract and entitlement before switch |
 
 ---
 
@@ -149,18 +149,18 @@ The current use of generic logins breaches IT security policy, lacks traceabilit
 ## R – Risk Assessment
 
 ### Current State:
-- 5 critical manufacturing devices (M8662, W9474, M1909, M8687, SEIKI21) use insecure shared credentials.
+- Five critical manufacturing devices (M8662, W9474, M1909, M8687, SEIKI21) use insecure shared credentials.
 - No login accountability (all users share `CellA` or `CellB`)
 - Admin rights are loosely scoped.
 - No effective control over RDP, SharePoint or drive access
 
 ### Identified Risks (with mitigation):
-| Risk Ref | Description | Mitigation |
-|----------|-------------|------------|
-| R01 | Legacy apps may not function correctly with the new shared account | App validation and staged UAT |
-| R02 | Hardcoded credentials may exist in NX or Teamcenter | Confirm all integrations and run test sessions |
-| R03 | Licensing for NX/Teamcenter may be invalid | Engage business owner for audit and contract validation |
-| R04 | Users may not adopt the new login process cleanly | Stakeholder-led communication and desk support |
+| Risk Ref | Description                                                        | Mitigation                                              |
+|----------|--------------------------------------------------------------------|---------------------------------------------------------|
+| R01      | Legacy apps may not function correctly with the new shared account | App validation and staged UAT                           |
+| R02      | Hardcoded credentials may exist in NX or Teamcenter                | Confirm all integrations and run test sessions          |
+| R03      | Licensing for NX/Teamcenter may be invalid                         | Engage business owner for audit and contract validation |
+| R04      | Users may not adopt the new login process cleanly                  | Stakeholder-led communication and desk support          |
 
 ---
 
@@ -218,11 +218,11 @@ The current use of generic logins breaches IT security policy, lacks traceabilit
 ## T – Test Plan
 
 ### UAT Checklist:
-- [ ] Can login with `shr-machine-mfg` on all 5 target devices
+- [ ] Can login with `shr-machine-mfg` on all five target devices
 - [ ] Confirm mapped drives mount: `V:`, `J:`, `Z:`
 - [ ] Open and interact with: NX, Teamcenter, Mestec, MS Office
 - [ ] Access and navigate SharePoint: Manufacturing + Shopfloor sites
-- [ ] Perform RDP test from authorised source device
+- [ ] Perform RDP test from an authorised source device
 - [ ] Validate local admin restrictions apply
 - [ ] Confirm internet access functions within policy constraints
 - [ ] Verify password is vaulted and recoverable via 1Password
@@ -232,7 +232,7 @@ The current use of generic logins breaches IT security policy, lacks traceabilit
 ## Implementation Window
 
 - **Proposed Date:** Wednesday, [Insert actual date here]
-- **Expected Duration:** 2 hours (1 hour prep, 1 hour implementation + validation)
+- **Expected Duration:** 2 hours (1-hour prep, 1-hour implementation + validation)
 - **Downtime Impact:** None (transparent to users during standard shift)
 - **Affected Users:** 40+ machine shop personnel (Conner Murphy's team)
 
@@ -258,7 +258,7 @@ The current use of generic logins breaches IT security policy, lacks traceabilit
 
 - Retain disabled `CellA`/`CellB` accounts for 14-day fallback window
 - Restore original AD group membership if needed
-- Revert mapped drives and app configurations (snapshotted prior)
+- Revert mapped drives and app configurations (snapshot prior)
 - Engage IT Support Team (TIG) for full rollback coordination
 
 ---
