@@ -430,7 +430,13 @@ This change introduces a centralised, domain-controlled shared account `shr-mach
 | 'Test-1' | Group Membership |
 '
 
+-------------------------------------
 
+###  Rollback Plan (Reversion to Legacy Accounts)
+
+In the event of implementation failure, revert user access by enabling legacy accounts `CellA` and `CellB`.  
+Restore group memberships and workstation permissions associated with these accounts.  
+Ensure file access, email redirection, and drive mappings are re-established as per previous known-good state.
 
 ---------------------------------------
 
@@ -640,5 +646,13 @@ Network Drives Mapped and ACL Confirmed
 Local Device Login Works	
 OneDrive Upload Tested (if applicable)	
 Audit Logs Exported and Saved	
+
+
+
+### 🔁 Rollback Plan (Reversion to Legacy Accounts)
+
+In the event of implementation failure, revert user access by enabling legacy accounts `CellA` and `CellB`.  
+Restore group memberships and workstation permissions associated with these accounts.  
+Ensure file access, email redirection, and drive mappings are re-established as per previous known-good state.
 
 
