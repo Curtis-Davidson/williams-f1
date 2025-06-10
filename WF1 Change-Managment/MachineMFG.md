@@ -422,3 +422,223 @@ This change introduces a centralised, domain-controlled shared account `shr-mach
 -  UAT Tracker Excel template
 -  AD automation scripts (PowerShell-based)
 -  Screenshot placeholders for handover/documentation pack  
+
+## CAB 11th June 2025
+
+- **Preferred Method:** During working hours
+
+| 'Test-1' | Group Membership |
+'
+
+
+
+---------------------------------------
+
+# Work Order – Implementation Plan for `shr-modelshop` Shared Account
+
+**Project:** Modelshop Generic Account Remediation  
+**Change Owner:** Paul Davidson  
+**Submission Date:** 08 June 2025  
+**Implementation Type:** Production Change  
+**Authorised Window:** 3 Working Days (or until sign-off)  
+**Location:** Williams F1 – Factory (Engineering Category 8 Devices)
+
+---
+
+## 1. Account Creation & AD Integration
+
+ **Action:**  
+Create `shr-modelshop` shared account in AD
+
+ **File Path:**  
+Active Directory > Shared Accounts OU
+
+ **Command:**
+
+```powershell
+
+
+
+
+# Work Order – Implementation Actions: `shr-modelshop`
+
+---
+
+##  Notes (Metadata Entry)
+
+- **Manager:** Mark Peers  
+- **SR Reference:** WF1SD-xxxx  
+- **Instruction:** Disable all non-required AD fields (e.g. phone, department)
+
+---
+
+## 2. Logon Lockdown to Category 8 Devices
+
+ **Action:** Restrict interactive logon to authorised engineering workstations  
+ **Devices:**  
+`M1262, W9014, M9504, W9478, M9062, W9435, W9058, M3123, L10556, L12048, creaform, L2464`
+
+ **Command:**
+```powershell
+Set-ADUser shr-modelshop -LogonWorkstations "M1262,W9014,M9504,W9478,M9062,W9435,W9058,M3123,L10556,L12048,creaform,L2464"
+
+
+3. Security Group Creation & Assignment
+ Action: Create scoped access groups
+
+ Commands:
+
+New-ADGroup -Name "grp-modelshopRW" -GroupScope Global -Path "OU=Security Groups"
+New-ADGroup -Name "grp-modelshopLAC" -GroupScope Global -Path "OU=Security Groups"
+New-ADGroup -Name "grp-modelshopRDC" -GroupScope Global -Path "OU=Security Groups"
+
+Memberships:
+
+Add shr-modelshop to:
+
+grp-modelshopRW
+
+grp-modelshopLAC
+
+Add Mark Peers and Julian Davies to:
+
+grp-modelshopRDC
+
+4. Shared Mailbox Creation
+ Action: Provision Microsoft 365 Shared Mailbox
+
+ Command:
+
+powershell
+Copy
+Edit
+New-Mailbox -Shared -Name "Modelshop" -DisplayName "Modelshop" -Alias "modelshop" -PrimarySmtpAddress "modelshop@williamsf1.com"
+ Delegate Access via Group:
+
+powershell
+Copy
+Edit
+Add-MailboxPermission -Identity "modelshop" -User "grp-modelshopRW" -AccessRights FullAccess -AutoMapping $true
+5. Teams Activation
+ Action: Enable Microsoft Teams profile for shared account
+
+ Command:
+
+powershell
+Copy
+Edit
+Set-CsUser -Identity "shr-modelshop@williamsf1.com" -TeamsUpgradePolicy "UpgradeToTeams"
+ Validate:
+
+Presence
+
+Calendar sync
+
+Chat permissions
+
+6. Network Share Access
+ Action: Map drives with correct permissions
+
+ Drive Mappings:
+
+Drive	Path	Group Access
+P:\	\\factory.wf1\DFS2\WTData	grp-modelshopRW
+T:\	\\factory.wf1\DFS2\Department2	grp-modelshopRW
+X:\	\\factory.wf1\wf1\user_cae_files2\shr-modelshop	grp-modelshopRW
+Y:\	\\factory.wf1\wf1\pdmfiles\cae_common	grp-modelshopRW
+
+ Validate:
+
+powershell
+Copy
+Edit
+Test-Path "\\factory.wf1\DFS2\WTData"
+(Get-Acl "\\factory.wf1\DFS2\WTData").Access | Where-Object { $_.IdentityReference -like "*modelshop*" }
+7. SharePoint Collaboration Access
+ Action: Enable SharePoint browser-based access only
+
+ Sites:
+
+The Hub → https://williamsf1.sharepoint.com/sites/SPC-TheHub/
+
+Aero Ops → https://williamsf1.sharepoint.com/sites/AeroOps1
+
+Modelshop → https://williamsf1.sharepoint.com/sites/ModelShop
+
+ Method:
+
+Assign grp-modelshopRW to M365 Group access
+
+Set read/write on libraries
+
+Validate browser login
+
+8. Endpoint Configuration (Per Workstation)
+ Action: Local workstation prep per TunnelOps-Seq06
+
+ Steps:
+
+powershell
+Copy
+Edit
+Remove-LocalGroupMember -Group "Administrators" -Member "modelshop"
+Add shr-modelshop to Users group
+
+Test login with shr-modelshop
+
+Validate CAD app access
+
+Ensure drives auto-map correctly
+
+9. Intune Policy (Optional)
+ Action: Allow photo sync from mobile devices to OneDrive
+
+ Policy Steps:
+
+Deploy via Microsoft Endpoint Manager
+
+Configure MDM Profile:
+
+Enable Camera Roll Backup
+
+Sync to shr-modelshop OneDrive path
+
+ Validate:
+
+Upload sample image
+
+Confirm path: OneDrive > Modelshop > CADUploads
+
+10. Final Audit & Confirmation
+ Action: Generate audit logs and validate all systems
+
+ Scripts to Run:
+
+powershell
+Copy
+Edit
+.\Get-LogonAuditReport.ps1 -Username "shr-modelshop"
+.\validate-onedrive-upload.ps1
+Get-ADUser shr-modelshop -Properties MemberOf
+📎 Log Exports:
+
+Markdown: shr-modelshop-deploy.md
+
+CSV: logon-audit.csv
+
+JSON: access-tree.json
+
+## Final Checklist for CAB Sign-Off
+Task	Status
+Shared Account Exists in AD	
+Logon Workstation Restricted	
+Groups Created and Populated	
+Shared Mailbox Working	
+Teams Profile Validated	
+SharePoint Access Online Only	
+Network Drives Mapped and ACL Confirmed	
+Local Device Login Works	
+OneDrive Upload Tested (if applicable)	
+Audit Logs Exported and Saved	
+
+
