@@ -428,6 +428,16 @@ This change introduces a centralised, domain-controlled shared account `shr-mach
 - **Preferred Method:** During working hours
 
 | 'Test-1' | Group Membership |
+
+------------------------------------
+
+###  Change Description
+
+This change forms part of the **Shared Account Remediation Project** at Williams F1.  
+It introduces a centrally managed shared identity (`shr-modelshop`) for the Modelshop
+This change introduces a centrally managed shared account (`shr-modelshop`) for the Modelshop engineering team, replacing legacy accounts (`CellA`, `CellB`).  
+It implements secure, auditable access across AD, Microsoft 365 (Exchange, Teams, SharePoint), and on-premises resources.  
+The objective is to align with WF1 identity standards, enforce workstation-level logon control, and streamline collaboration.
 '
 
 -------------------------------------
