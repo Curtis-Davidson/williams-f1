@@ -137,3 +137,54 @@ After the script runs, confirm mailbox creation:
 
 Get-Mailbox -Identity "modelshop@williamsf1.com" | Format-List Name,PrimarySmtpAddress,RecipientTypeDetails
 
+
+
+Fix: Step-by-Step Instructions to Connect to Exchange Online in PowerShell
+1. Run PowerShell as Administrator
+Always use Windows PowerShell (not PowerShell Core/7) for Exchange Online.
+
+2. Install the Exchange Online Module (One-Time Only)
+
+Install-Module -Name ExchangeOnlineManagement -Scope CurrentUser -Force
+
+If prompted to trust the repository, type Y and press Enter.
+
+3. Import the Module
+
+Import-Module ExchangeOnlineManagement
+
+
+4. Connect to Exchange Online
+
+Connect-ExchangeOnline -UserPrincipalName paul.davidson@admin.williamsf1.com
+
+
+Now Run Your Mailbox Script
+After connecting, run your create-shared-mailbox-modelshop.ps1 script.
+
+
+
+To Check if the Mailbox Already Exists
+Before creating, run:
+
+Get-Mailbox -Identity "modelshop@williamsf1.com"
+
+
+If it exists, you'll see mailbox details. If not, it will throw an error like:
+
+Summary of Required Setup
+
+Step	Command
+Install module	Install-Module ExchangeOnlineManagement
+Import module	Import-Module ExchangeOnlineManagement
+Connect	Connect-ExchangeOnline -UserPrincipalName your.admin@domain.com
+Check mailbox	Get-Mailbox -Identity "modelshop@williamsf1.com"
+Run script	.\create-shared-mailbox-modelshop.ps1
+
+
+
+
+
+
+
+
