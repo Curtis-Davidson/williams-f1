@@ -62,3 +62,18 @@ Install Module:
 Install-Module -Name ExchangeOnlineManagement -Scope CurrentUser -Force
 
 Connect-ExchangeOnline -UserPrincipalName paul.davidson@admin.williamsf1.com
+
+
+
+# Must run in an elevated PowerShell session
+Add-WindowsCapability -Online -Name "Rsat.ActiveDirectory.DS-LDS.Tools~~~~0.0.1.0"
+
+
+
+Confirm working:
+
+Import-Module ActiveDirectory
+Get-ADUser -Filter * -Properties SamAccountName | Select-Object -First 1
+
+
+
