@@ -22,11 +22,11 @@ function Create-Group {
         [string]$Description
     )
 
-    Write-Host "🛠 Creating group: $Name ..." -ForegroundColor Cyan
+    Write-Host "Creating group: $Name ..." -ForegroundColor Cyan
 
     # Check if group already exists
     if (Get-ADGroup -Filter "Name -eq '$Name'" -ErrorAction SilentlyContinue) {
-        Write-Warning "⚠ Group '$Name' already exists. Skipping..."
+        Write-Warning "Group '$Name' already exists. Skipping..."
         return
     }
 
