@@ -81,3 +81,6 @@ You must verify that this exact OU path exists:
 
 Get-ADOrganizationalUnit -LDAPFilter "(distinguishedName=OU=Modelshop,OU=WF1-Resources,DC=Factory,DC=WF1)"
 
+Get-ADOrganizationalUnit -Filter * | Where-Object {
+    ($_.DistinguishedName -split ',').Count -eq 3
+} | Select Name, DistinguishedName
