@@ -99,3 +99,41 @@ Get-ADGroup -Filter * -Properties DistinguishedName |
         Select-Object Name, DistinguishedName |
         Sort-Object Name
 
+
+Get-Mailbox -Identity "modelshop@williamsf1.com" -ErrorAction SilentlyContinue
+
+
+if (Get-Mailbox -Identity "modelshop@williamsf1.com" -ErrorAction SilentlyContinue) {
+    Write-Host "Shared mailbox already exists." -ForegroundColor Green
+} else {
+    Write-Host "Shared mailbox does not exist." -ForegroundColor Yellow
+}
+
+
+1. Install Exchange Online Management Module (Only Once)
+Run this from elevated PowerShell (Run as Administrator):
+
+Install-Module -Name ExchangeOnlineManagement -Scope AllUsers -Force
+
+
+
+2. Import Module Before Use (Every Session)
+
+Import-Module ExchangeOnlineManagement
+
+
+
+3. Connect to Exchange Online
+Connect-ExchangeOnline -UserPrincipalName paul.davidson@admin.williamsf1.com
+
+
+
+4. Run the Shared Mailbox Provisioning Script
+Assuming your script is located at:
+
+5. Confirm Mailbox Was Created
+After the script runs, confirm mailbox creation:
+
+
+Get-Mailbox -Identity "modelshop@williamsf1.com" | Format-List Name,PrimarySmtpAddress,RecipientTypeDetails
+

@@ -59,6 +59,18 @@ Set-Mailbox -Identity $mailboxEmail -HiddenFromAddressListsEnabled $false
 Write-Host "`n Setting custom description attribute for audit trace..."
 Set-Mailbox -Identity $mailboxEmail -CustomAttribute1 "Modelshop Shared Mailbox for factory"
 
+# === Enable Mailbox Audit Logging ===
+Write-Host "`n Enabling mailbox audit logging (90-day retention)..."
+Set-Mailbox -Identity $mailboxEmail -AuditEnabled $true
+Set-Mailbox -Identity $mailboxEmail -AuditLogAgeLimit 90.00:00:00
+
+# === Optional: Assign Folder-Level Permissions (e.g., Reviewer to Inbox) ===
+# Uncomment if needed for app/service access without full mailbox rights
+# Write-Host "`n Assigning Reviewer access to Inbox for $roGroup..."
+# Add-MailboxFolderPermission -Identity "$mailboxEmail:\Inbox" `
+#                             -User $roGroup `
+#                             -AccessRights Reviewer
+
 # === Verification Output ===
 Write-Host "`n Verifying mailbox configuration..."
 Get-Mailbox $mailboxEmail | Format-List Name,PrimarySmtpAddress,RecipientTypeDetails,HiddenFromAddressListsEnabled,CustomAttribute1
