@@ -76,4 +76,8 @@ Import-Module ActiveDirectory
 Get-ADUser -Filter * -Properties SamAccountName | Select-Object -First 1
 
 
+Rule 6 Step – Confirm OU Before Group Creation
+You must verify that this exact OU path exists:
+
+Get-ADOrganizationalUnit -LDAPFilter "(distinguishedName=OU=Modelshop,OU=WF1-Resources,DC=Factory,DC=WF1)"
 
