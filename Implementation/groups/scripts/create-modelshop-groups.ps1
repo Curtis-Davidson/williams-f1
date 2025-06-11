@@ -37,7 +37,7 @@ function Create-Group {
                 -GroupScope Global `
                 -DisplayName $Name `
                 -Description $Description `
-                -Path "OU=Modelshop,OU=WF1-Resources,DC=factory,DC=wf1"
+                -Path "OU=!Application Security Groups,OU=Factory OU,DC=Factory,DC=WF1"
 
     Write-Host "Group created: $Name" -ForegroundColor Green
 }
