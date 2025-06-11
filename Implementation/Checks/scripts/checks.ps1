@@ -84,3 +84,18 @@ Get-ADOrganizationalUnit -LDAPFilter "(distinguishedName=OU=Modelshop,OU=WF1-Res
 Get-ADOrganizationalUnit -Filter * | Where-Object {
     ($_.DistinguishedName -split ',').Count -eq 3
 } | Select Name, DistinguishedName
+
+
+
+
+Get-ADGroup -Filter * -Properties DistinguishedName |
+        Select-Object Name, DistinguishedName |
+        Sort-Object DistinguishedName
+
+
+
+Get-ADGroup -Filter * -Properties DistinguishedName |
+        Where-Object { $_.DistinguishedName -like "*OU=Modelshop,*" } |
+        Select-Object Name, DistinguishedName |
+        Sort-Object Name
+
