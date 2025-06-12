@@ -1,0 +1,155 @@
+
+# Define an implementation plan with sequencing and dependencies
+implementation_steps = [
+    ("Preparation", "Review the full device list and confirm Category 3 and 8 classification."),
+    ("Preparation", "Verify all listed users have individual AD accounts."),
+    ("Account Setup", "Create the 'shr-modelshop' shared AD account."),
+    ("Account Setup", "Configure password policy (annual reset) and add AD notes."),
+    ("Mailbox Setup", "Create shared mailbox: modelshop@williamsf1.com."),
+    ("Teams Setup", "Enable MS Teams for shr-modelshop account."),
+    ("Group Creation", "Create RW (grp-modelshopRW), RO (grp-modelshopRO), Login (grp-modelshopLAC), and RDP (grp-modelshopRDC) AD groups."),
+    ("Group Assignment", "Add shr-modelshop to RW and LAC groups."),
+    ("Group Assignment", "Add approved users to grp-modelshopRDC."),
+    ("Device Policy", "Restrict Category 3 devices to individual login only."),
+    ("Device Policy", "Restrict Category 8 devices to shr-modelshop login only."),
+    ("Device Configuration", "Remove local admin rights from listed business users on all Category 8 devices."),
+    ("Device Configuration", "Add DPT Admin group as local admin on Category 8 devices."),
+    ("Permission Mapping", "Map network drives P:, T:, X:, Y: for shr-modelshop."),
+    ("Permission Mapping", "Grant SharePoint access for shr-modelshop to The Hub, Aero Ops, and Modelshop sites."),
+    ("Photo Upload", "Migrate photo repository from modelshop to shr-modelshop’s OneDrive."),
+    ("Photo Upload", "Configure device upload paths to shr-modelshop OneDrive."),
+    ("App Availability", "Ensure all apps available under modelshop are replicated for shr-modelshop."),
+    ("UAT", "Test app and web app behaviour under shr-modelshop."),
+    ("UAT", "Confirm VNCViewer and RDP functionality on all Category 8 devices."),
+    ("Rollout", "Inform teams and enforce screen-lock policy."),
+    ("Rollout", "Switch login to shr-modelshop on Category 8 devices."),
+    ("Monitoring", "Monitor for issues and allow rollback using modelshop temporarily."),
+    ("Decommission", "Once stable, disable modelshop account in AD and Entra."),
+]
+
+df_plan = pd.DataFrame(implementation_steps, columns=["Phase", "Action"])
+tools.display_dataframe_to_user(name="Modelshop Migration Implementation Plan", dataframe=df_plan)
+
+
+
+
+import pandas as pd
+from IPython.display import display
+
+# Structured checklist from extracted information
+checklist_data = [
+    {
+        "Category": "Account Creation",
+        "Action": "Create shr-modelshop shared AD account",
+        "Reference": "modelshop-FR0001-01",
+        "Question/Note": ""
+    },
+    {
+        "Category": "Email",
+        "Action": "Create shared mailbox: modelshop@williamsf1.com",
+        "Reference": "modelshop-FR0003-01",
+        "Question/Note": "Ensure visibility via individual Outlook profiles"
+    },
+    {
+        "Category": "MS Teams",
+        "Action": "Enable MS Teams functionality for shr-modelshop@williamsf1.com",
+        "Reference": "modelshop-FR0004-01",
+        "Question/Note": "Check M365 licensing compatibility"
+    },
+    {
+        "Category": "AD Groups",
+        "Action": "Create RW and RO groups (e.g. grp-modelshopRW, grp-modelshopRO)",
+        "Reference": "modelshop-FR0021-01",
+        "Question/Note": ""
+    },
+    {
+        "Category": "AD Groups",
+        "Action": "Create Login Access Control group (grp-modelshopLAC)",
+        "Reference": "modelshop-FR0022-01",
+        "Question/Note": ""
+    },
+    {
+        "Category": "AD Groups",
+        "Action": "Create Remote Desktop Control group (grp-modelshopRDC)",
+        "Reference": "modelshop-FR0024-01",
+        "Question/Note": ""
+    },
+    {
+        "Category": "AD Group Assignment",
+        "Action": "Add shr-modelshop to RW and LAC groups",
+        "Reference": "modelshop-FR0041-01, FR0042-01",
+        "Question/Note": ""
+    },
+    {
+        "Category": "RDP Access",
+        "Action": "Add named users to grp-modelshopRDC",
+        "Reference": "modelshop-FR0044-01",
+        "Question/Note": "Ensure all listed users are added correctly"
+    },
+    {
+        "Category": "Device Access",
+        "Action": "Restrict Category 3 devices to individual accounts only",
+        "Reference": "modelshop-FR0101-01",
+        "Question/Note": ""
+    },
+    {
+        "Category": "Device Access",
+        "Action": "Restrict Category 8 devices to shr-modelshop only",
+        "Reference": "modelshop-FR0102-01",
+        "Question/Note": ""
+    },
+    {
+        "Category": "Permissions",
+        "Action": "Enable shr-modelshop access to network drives P, T, X, Y",
+        "Reference": "modelshop-FR0061-01",
+        "Question/Note": "Verify mapped paths exist and are accessible"
+    },
+    {
+        "Category": "Permissions",
+        "Action": "Grant shr-modelshop access to SharePoint: The Hub, Aero Ops, Modelshop",
+        "Reference": "modelshop-FR0063-01",
+        "Question/Note": "Confirm access via standard SharePoint controls"
+    },
+    {
+        "Category": "OneDrive + M365",
+        "Action": "Migrate photo storage from modelshop to shr-modelshop",
+        "Reference": "modelshop-FR0065-01",
+        "Question/Note": "Ensure device upload path is configured"
+    },
+    {
+        "Category": "App Configuration",
+        "Action": "Enable same apps/web apps under shr-modelshop",
+        "Reference": "modelshop-FR0141-01",
+        "Question/Note": "UAT required per modelshop-FR0143-01/0144-01"
+    },
+    {
+        "Category": "Device Admin Cleanup",
+        "Action": "Remove modelshop and listed local admins from Category 8 devices",
+        "Reference": "modelshop-FR0341-01 to FR0341-12",
+        "Question/Note": "Cross-check with full device admin list"
+    },
+    {
+        "Category": "Password Policy",
+        "Action": "Enforce yearly password reset for shr-modelshop",
+        "Reference": "modelshop-FR0361-01",
+        "Question/Note": "Store securely in password vault"
+    },
+    {
+        "Category": "Documentation",
+        "Action": "Add AD notes for shr-modelshop (owner, usage, reset info)",
+        "Reference": "modelshop-FR0362-01",
+        "Question/Note": ""
+    },
+    {
+        "Category": "Decommissioning",
+        "Action": "Disable modelshop generic account post-rollout",
+        "Reference": "modelshop-FR0501-01",
+        "Question/Note": "Only after full UAT success and confirmation"
+    }
+]
+
+df_checklist = pd.DataFrame(checklist_data)
+import ace_tools as tools; tools.display_dataframe_to_user(name="Modelshop Migration Checklist", dataframe=df_checklist)
+
+
+
