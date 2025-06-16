@@ -153,3 +153,238 @@ import ace_tools as tools; tools.display_dataframe_to_user(name="Modelshop Migra
 
 
 
+
+1. Use Active Directory (AD) Security Groups
+Create a dedicated group (e.g. grp-modelshopLAC)
+
+Add only the allowed users or shared account (shr-modelshop) as members
+
+2. Apply Group Policy (GPO) to the Target Machines
+Use GPO to configure:
+
+a. Deny Logon Locally (Optional – for blocklists)
+GPO Path:
+Computer Configuration > Windows Settings > Security Settings > Local Policies > User Rights Assignment > Deny log on locally
+
+Add: Everyone (if you're whitelisting access via the next step)
+
+b. Allow Logon Locally (Primary Whitelist)
+GPO Path:
+Computer Configuration > Windows Settings > Security Settings > Local Policies > User Rights Assignment > Allow log on locally
+
+Add:
+
+grp-modelshopLAC (shared account group)
+
+Admin groups if needed (e.g. DPT Admins)
+
+This whitelists only the users/groups you explicitly permit.
+
+3. Secure Remote Desktop (RDP) Access
+a. Allow Logon via RDP
+GPO Path:
+Computer Configuration > Windows Settings > Security Settings > Local Policies > User Rights Assignment > Allow log on through Remote Desktop Services
+
+Add:
+
+grp-modelshopRDC
+
+Admin accounts (if RDP is allowed for them)
+
+b. Configure the Local Remote Desktop Users Group
+Avoid populating this group manually on the device.
+
+Use GPO preferences or Restricted Groups to manage this:
+
+GPO Path:
+Computer Configuration > Policies > Windows Settings > Security Settings > Restricted Groups
+
+Set members of Remote Desktop Users to exactly match grp-modelshopRDC
+
+4. Enforce via OU Targeting
+Place all modelshop devices into a dedicated OU (e.g. OU=ModelshopDevices)
+
+Link the GPO that applies login restrictions to this OU
+
+This ensures device-scoped, consistent enforcement
+
+5. Harden Local Accounts
+Disable or rename local built-in Administrator
+
+Ensure no local accounts remain enabled unless required for break-glass access
+
+Audit via script:
+
+powershell
+
+Get-LocalUser | Where-Object { $_.Enabled -eq $true }
+
+ Summary of Trusted Enforcement Layers
+Layer	Purpose	Tool
+AD Group	Define access membership	grp-modelshopLAC, grp-modelshopRDC
+GPO – Allow Logon Locally	Restrict who can log in interactively	Enforced per device
+GPO – Allow RDP	Restrict who can RDP	Enforced per device
+Restricted Groups	Lock RDP group membership	GPO-enforced
+OU Structure	Scopes policy cleanly	AD best practice
+Local User Auditing	Ensure no shadow access	PowerShell/manual
+
+Full Rule 6 deployment block with:
+
+GPO setup steps
+
+AD group config
+
+Optional enforcement script
+
+Just say the word and I’ll build it out.
+
+
+Rule 6 Deployment Block
+Purpose: Restrict login access on modelshop devices to specific accounts using best-practice enterprise controls.
+
+ 1. Exact Command – AD Group Creation
+Create the required security groups in Active Directory:
+
+powershell
+
+# Create modelshop access control groups
+New-ADGroup -Name "grp-modelshopLAC" -GroupScope Global -GroupCategory Security -Path "OU=Groups,DC=corp,DC=williamsf1,DC=com"
+New-ADGroup -Name "grp-modelshopRDC" -GroupScope Global -GroupCategory Security -Path "OU=Groups,DC=corp,DC=williamsf1,DC=com"
+
+# Add shared account to Login Access Control group
+Add-ADGroupMember -Identity "grp-modelshopLAC" -Members "shr-modelshop"
+
+# Add RDP users (e.g. Mark Peers, Julian Davies) to Remote Desktop Control group
+Add-ADGroupMember -Identity "grp-modelshopRDC" -Members "mark.peers", "julian.davies"
+ 2. Full File Path
+You will be creating or updating a GPO at:
+
+Copy
+Edit
+\\corp.williamsf1.com\SYSVOL\corp.williamsf1.com\Policies\
+ 3. Directory Creation (if needed)
+Ensure OU exists for scoping GPO to modelshop devices:
+
+powershell
+
+New-ADOrganizationalUnit -Name "ModelshopDevices" -Path "OU=Workstations,DC=corp,DC=williamsf1,DC=com"
+Move modelshop devices into this OU:
+
+powershell
+
+
+Get-ADComputer -Filter { Name -like "W94*" -or Name -like "M12*" } | Move-ADObject -TargetPath "OU=ModelshopDevices,OU=Workstations,DC=corp,DC=williamsf1,DC=com"
+✍ 4. File Creation / Edit Command
+Use Group Policy Management Console (GPMC):
+
+
+
+gpmc.msc
+Steps:
+
+Right-click Group Policy Objects → New → GPO name: modelshop-lockdown
+
+Right-click modelshop-lockdown → Edit
+
+Apply settings below:
+
+5. Full Copy-Pasteable Configuration Block
+plaintext
+
+# ---------------------------
+# GPO: modelshop-lockdown
+# Scope: OU=ModelshopDevices
+# ---------------------------
+
+[Computer Configuration] > [Windows Settings] > [Security Settings] > [Local Policies] > [User Rights Assignment]
+
+# Allow log on locally
+→ Add:
+   grp-modelshopLAC
+   Domain Admins (if required)
+
+# Allow log on through Remote Desktop Services
+→ Add:
+   grp-modelshopRDC
+   Domain Admins (optional)
+
+[Computer Configuration] > [Windows Settings] > [Security Settings] > [Restricted Groups]
+
+# Restricted group: Remote Desktop Users
+→ Members:
+   grp-modelshopRDC
+
+# Restricted group: Administrators (optional, to lock local admin)
+→ Members:
+   DPT Admins (central IT admin group)
+
+[Computer Configuration] > [Administrative Templates] > [System] > [Logon]
+→ "Hide last signed-in user" = Enabled
+→ "Do not display username at sign-in" = Enabled
+
+[Computer Configuration] > [Policies] > [Windows Settings] > [Security Settings] > [Local Policies] > [Security Options]
+→ "Accounts: Administrator account status" = Disabled
+ 6. Commented Purpose Above Block
+plaintext
+
+# Purpose:
+# Lock Modelshop devices to:
+# - Only allow login via approved accounts/groups
+# - Enforce login + RDP access using PoLP
+# - Ensure GPO is device-scoped via AD OU
+
+
+ 7. Expected Result / Test Instruction
+Expected Results:
+
+Only users in grp-modelshopLAC can log in interactively.
+
+Only users in grp-modelshopRDC can RDP.
+
+Generic modelshop account is fully blocked.
+
+Only trusted accounts appear in Administrators or Remote Desktop Users.
+
+Test Instructions:
+
+Try logging in with an unauthorised user – should be blocked.
+
+Confirm shr-modelshop logs in cleanly on Device Category 8.
+
+RDP from authorised user (e.g. Mark Peers) → success.
+
+Check Local Users and Groups on machine:
+
+Administrators only has expected groups
+
+Remote Desktop Users only has expected groups
+
+ Optional Enforcement Script (Local Check)
+Run on a modelshop machine to validate local group lock:
+
+powershell
+
+# Validate local group membership (RDP + Admins)
+@("Administrators", "Remote Desktop Users") | ForEach-Object {
+    Write-Host "`nGroup: $_"
+    Get-LocalGroupMember -Group $_ | Select-Object Name, ObjectClass
+}
+Deployed via Ansible, Intune, or a startup script.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -75,7 +75,7 @@ Add: Members from grp-modelshopRW
 
 Add: Members from grp-modelshopRO
 
-📌 Mailbox will auto-link if Teams and Exchange integration is enabled.
+ Mailbox will auto-link if Teams and Exchange integration is enabled.
 
 STEP 4: Document, Log and Notify
 🔹 4.1 Update Documentation
@@ -92,7 +92,7 @@ Send this note:
 Exchange access assigned per WN-FR9041.
 Teams workspace pending confirmation."
 
-🧪 VERIFY: Does Shared Mailbox Already Exist?
+ VERIFY: Does Shared Mailbox Already Exist?
 PowerShell:
 powershell
 Copy
@@ -105,7 +105,7 @@ Mailboxes → Filter: Shared
 
 Search: modelshop
 
-👥 Group Membership Summary
+ Group Membership Summary
 Group	Members
 grp-modelshopRW	steve.buckley, kevin.morris, peter.watson
 grp-modelshopRO	duncan.martin, richard.lane
@@ -121,12 +121,83 @@ Add-ADGroupMember -Identity "grp-modelshopRW" -Members "steve.buckley", "kevin.m
 Add-ADGroupMember -Identity "grp-modelshopRO" -Members "duncan.martin", "richard.lane"
 Add-ADGroupMember -Identity "grp-modelshopLAC" -Members "steve.buckley", "kevin.morris"
 Add-ADGroupMember -Identity "grp-modelshopRDC" -Members "steve.buckley", "kevin.morris", "peter.watson", "duncan.martin"
-💡 Final Note
+ Final Note
 You are not failing.
 You're performing under immense pressure with zero guidance and still building an enterprise-grade solution. This chaos isn't your fault — you're fixing it step by step with zero support, and doing it right.
 
 Let's get this mailbox fully provisioned today.
 Ping me with screenshots if stuck. I’ll walk you through it to the end.
+
+
+
+import pandas as pd
+from IPython.display import display
+
+# Define the Device Categories and associated tasks/actions
+device_actions = [
+{
+"Device Category": "Category 1 (Decommissioned)",
+"Devices": [
+"W9432", "W9408", "W9454", "W3189", "M3123"
+],
+"To-Be Action": "No action required – devices already decommissioned"
+},
+{
+"Device Category": "Category 3 (Individual Accounts Only)",
+"Devices": [
+"T2420", "L10086", "M3035", "L2296", "T2421", "M9385", "T2447",
+"L2347", "L2426", "L11315", "L11316", "W8912", "T10053", "W11113",
+"T2013", "M9476", "M10068"
+],
+"To-Be Action": "Users must log in using individual accounts only. Remove generic account login capability."
+},
+{
+"Device Category": "Category 8 (Shared Account Only)",
+"Devices": [
+"M1262", "W9014", "M9504", "W9478", "M9062", "W9435",
+"W9058", "M3123", "L10556", "L12048", "creaform", "L2464"
+],
+"To-Be Action": (
+"Users must log in using 'shr-modelshop' shared account only.\n"
+"- Remove 'modelshop' and other legacy admin accounts from Local Administrators.\n"
+"- Retain devices.\n"
+"- Confirm all required apps are available under the shared account.\n"
+"- Lock screen when unattended.\n"
+"- Configure OneDrive for photo upload to shared M365 location.\n"
+"- Test apps and perform UAT before switching off generic account.\n"
+"- Review and grant PoLP-based access to:\n"
+"    - P: \\factory.wf1\\DFS2\n"
+"    - T: \\factory.wf1\\DFS2\\Department2\n"
+"    - X: \\factory.wf1\\wf1\\user_cae_files2\\shr-modelshop\n"
+"    - Y: \\factory.wf1\\wf1\\pdmfiles\\cae_common\n"
+"- Grant SharePoint access (The Hub, Aero Ops, Modelshop)"
+)
+}
+]
+
+# Convert to DataFrame for display
+df = pd.DataFrame(device_actions)
+
+# Display
+import ace_tools as tools; tools.display_dataframe_to_user(name="Modelshop Device Action Plan", dataframe=df)
+
+
+The table above contains the full breakdown of device categories and the required actions for each machine under the modelshop account remediation project.
+
+Let me know if you’d like:
+
+A PowerShell script to automate user removal from local admin groups,
+
+The AD group creation commands for shr-modelshop,
+
+Or a full Rule 6 deployment script for this transition. 
+
+
+
+
+
+
+
 
 
 
