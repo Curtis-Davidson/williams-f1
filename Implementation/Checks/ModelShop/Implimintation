@@ -152,6 +152,195 @@ df_checklist = pd.DataFrame(checklist_data)
 import ace_tools as tools; tools.display_dataframe_to_user(name="Modelshop Migration Checklist", dataframe=df_checklist)
 
 
+# PURPOSE: Restrict RDP login access to specific AD group for a given machine
+
+1. Open Group Policy Management Console:
+   - Run `gpmc.msc` on your domain-joined admin PC.
+
+2. Create a New GPO:
+   - Right-click the OU where the device resides (e.g. 'ModelShop Devices').
+   - Click "Create a GPO in this domain, and Link it here..."
+   - Name it: `RDP Access – WF1LT-M3079`
+
+3. Edit the GPO:
+   - Right-click the new GPO > Edit
+
+4. Navigate to:
+   - Computer Configuration > Policies > Windows Settings > Security Settings > Local Policies > User Rights Assignment
+
+5. Open:
+   - “Allow log on through Remote Desktop Services”
+
+6. Click “Define these policy settings” and:
+   - Remove "Administrators" (only if you're securing tightly — otherwise leave it).
+   - Add: `RDP-WF1LT-M3079` (or whichever group you're targeting)
+
+7. Close the editor.
+
+8. Force the policy update on the target PC (once you're ready to test):
+   - On the target PC: Run `gpupdate /force`
+
+9. Confirm application:
+   - Run `rsop.msc` or `gpresult /h rdp-result.html`
+   - Check that the "Allow log on through RDS" setting is enforced from the GPO.
+
+
+   6. Commented Purpose Above Block
+
+# PURPOSE: Configure domain GPO to control RDP access to a specific machine
+# Only users in the RDP-WF1LT-M3079 group will be allowed to log in via RDP
+# GPO is linked at the OU level for that individual device
+
+7. Expected Result or Test Instruction
+	•	✅ Only members of the RDP-WF1LT-M3079 group will be able to RDP into the device.
+	•	❌ Users outside the group will receive: “You do not have permission to log on to this session.”
+	•	✅ Confirm via:
+	•	gpresult /r (shows applied GPO)
+	•	RDP test with approved and unapproved users
+
+
+RULE 6 – Set-GPRegistryValue for RDP Logon Group (Programmatic)
+
+⸻
+
+1. Exact Command
+
+
+Set-GPRegistryValue -Name "RDP Access – WF1LT-M3079" `
+    -Key "HKLM\SYSTEM\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp\UserPermissions" `
+    -ValueName "SeRemoteInteractiveLogonRight" `
+    -Type MultiString `
+    -Value "*S-1-5-21-xxxxxxxxxx-yyyyyyyyy-zzzzzzzzzz-123456"  # Replace with actual SID of RDP-WF1LT-M3079 group
+
+
+    3. Directory Creation (if needed)
+
+    Create GPO if not already present:
+
+    New-GPO -Name "RDP Access – WF1LT-M3079"
+
+
+    5. Full Copy-Pasteable Code Block
+
+
+    # PURPOSE: Configure GPO to allow RDP login only for the RDP-WF1LT-M3079 group via SID injection
+    -----------------------------------
+
+
+    # Define GPO name and target group SID
+    $gpoName = "RDP Access – WF1LT-M3079"
+    $rdpGroupSID = (Get-ADGroup -Identity "RDP-WF1LT-M3079").SID.Value
+
+    # Create GPO (if not already existing)
+    if (-not (Get-GPO -Name $gpoName -ErrorAction SilentlyContinue)) {
+        New-GPO -Name $gpoName
+    }
+
+    # Link GPO to target OU (replace OU path as needed)
+    New-GPLink -Name $gpoName -Target "OU=ModelShop Devices,OU=Factory OU,DC=williamsf1,DC=com" -Enforced:$false
+
+    # Set registry value for RDP logon rights
+    Set-GPRegistryValue -Name $gpoName `
+        -Key "HKLM\Software\Microsoft\Windows NT\CurrentVersion\Winlogon\SpecialAccounts\UserList" `
+        -ValueName "SeRemoteInteractiveLogonRight" `
+        -Type MultiString `
+        -Value "*$rdpGroupSID"
+
+
+
+ ----------------------
+
+6. Commented Purpose Above Block
+
+# PURPOSE: Restrict Remote Desktop logon access via GPO to specific AD security group (RDP-WF1LT-M3079)
+# Applies GPO-based registry value to enforce RDP logon permissions by group SID
+# GPO is linked to a specific OU where the target machine(s) reside
+
+-------------
+
+Best Method to Set Up Group for RDP Access (Per Device Model)
+
+⸻
+
+Purpose
+
+To enforce RDP access via Active Directory security groups—device-specific and auditable—supporting both shared and named logons.
+
+⸻
+Recommended Group Design (One Per Device)
+
+
+Group Name
+RDP-<Hostname> (e.g. RDP-WF1LT-M3079)
+
+
+Description
+`Device: WF1LT-M3079
+Membership
+Add users who require RDP to that machine only
+
+
+
+
+⸻
+
+1. Exact Command
+
+
+New-ADGroup -Name "RDP-WF1LT-M3079" `
+            -GroupScope Global `
+            -GroupCategory Security `
+            -Path "OU=!RDP Departmental Access,OU=Factory OU,DC=williamsf1,DC=com" `
+            -Description "Device: WF1LT-M3079 | Location: Modelshop WT2"
+
+
+     2. Full File Path
+
+     OU=!RDP Departmental Access,OU=Factory OU,DC=williamsf1,DC=com
+
+     ⸻
+
+     3. Directory Creation (if needed)
+
+     Already exists per Jason’s email: !RDP Departmental Access
+
+     ⸻
+
+     4. File Creation/Edit Command
+
+     N/A (Group object created in AD)
+
+     ⸻
+
+     5. Full Copy-Pasteable Code Block
+
+
+         # === Create RDP Access Group for Machine WF1LT-M3079 ===
+
+         New-ADGroup -Name "RDP-WF1LT-M3079" `
+                     -GroupScope Global `
+                     -GroupCategory Security `
+                     -Path "OU=!RDP Departmental Access,OU=Factory OU,DC=williamsf1,DC=com" `
+                     -Description "Device: WF1LT-M3079 | Location: Modelshop WT2"
+
+         # === Add example users to group ===
+         Add-ADGroupMember -Identity "RDP-WF1LT-M3079" -Members `
+             "nhayes", "mhackwood", "aperry"  # Replace with actual usernames
+
+         # === Optional: View group membership ===
+         Get-ADGroupMember "RDP-WF1LT-M3079"
+
+
+
+
+         # PURPOSE:
+         # Creates a per-device RDP access group for controlled remote access.
+         # Each group maps directly to a single machine and supports tight permission control.
+         # This ensures granular auditability and simple permission revocation.
+
+
+
+
 
 
 1. Use Active Directory (AD) Security Groups
