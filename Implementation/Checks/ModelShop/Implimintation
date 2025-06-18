@@ -563,6 +563,72 @@ Deployed via Ansible, Intune, or a startup script.
 
 
 
+---
+
+
+h1.  Modelshop Account Remediation – Neurodivergent-Friendly Summary
+
+h2.  Purpose
+* Replace insecure ''modelshop'' generic account with:
+** ''shr-modelshop'' shared domain account (team machines)
+** Individual accounts (personal workstations)
+
+h2.  Current ("As-Is") State
+* Multiple users share a single generic login.
+* Used across many devices for shift work and collaboration.
+* Breaks IT security policy – zero audit trail, high risk.
+
+h2.  Future ("To-Be") Setup
+h3.  Secure Login Rules
+* *Device Category 3* → Individual accounts *only*
+* *Device Category 8* → ''shr-modelshop'' shared account
+
+h3.  Shared Account Rules
+* Mailbox: *modelshop@williamsf1.com*
+* MS Teams identity
+* Drive access: *P:\ T:\ X:\ Y:\*
+* SharePoint: *The Hub, Aero Ops, Modelshop*
+
+h2.  Devices Breakdown
+* *Decommissioned (Cat 1):* W9432, W9408, W9454, W3189, M3123
+* *Individual Login (Cat 3):* T2420, L10086, M3035, L2296, T2421, M9385, T2447, L2347, L2426, L11315, L11316, W8912, T10053, W11113, T2013, M9476, M10068
+* *Shared Login (Cat 8):* M1262, W9014, M9504, W9478, M9062, W9435, W9058, M3123, L10556, L12048, creaform, L2464
+
+h2.  Key Users
+* ~40 users need ''shr-modelshop''
+* RDP access: *Mark Peers, Julian Davies*
+
+h2.  Access Summary
+|| Resource || Notes ||
+| Drives | P:\, T:\, X:\, Y:\ |
+| SharePoint | The Hub, Aero Ops, Modelshop |
+| Email | Shared mailbox: *modelshop@williamsf1.com* |
+| Teams | Full collaboration |
+| Photos | Devices auto-upload to ''shr-modelshop'' OneDrive |
+
+h2.  Security & Admin
+* Remove ''modelshop'' from all Local Admin groups.
+* Create AD groups: ''grp-modelshopRW'', ''grp-modelshopLAC'', ''grp-modelshopRDC''.
+
+h2.  UAT & Roll-back
+* UAT every app under ''shr-modelshop''
+* Emergency fallback: temporarily re-enable old account.
+
+h2.  Task Checklist
+# Create account, mailbox, Teams
+# Map drives & SharePoint via AD groups
+# Clean up Local Admins on Cat 8 devices
+# Migrate photo repository to new OneDrive
+# Add AD notes + password rotation; store in 1Password
+
+h2.  Risks
+* App configs hard-coded to ''modelshop''
+* Possible NX licence gaps
+* User habit friction during shifts
+
+
+
+
 
 
 
