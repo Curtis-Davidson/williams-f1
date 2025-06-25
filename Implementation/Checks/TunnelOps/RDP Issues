@@ -1,0 +1,173 @@
+Based on the screenshots and notes, here's a precise diagnosis of what you're seeing on each machine, why it’s likely happening, and what to fix.
+
+ Summary of Problems
+ M3076 / M3079 – RDP Identity Verification Error
+ "Remote Desktop cannot verify the identity of the remote computer because there is a time or date difference..."
+
+ Likely Cause:
+The system clock on M3076 and M3079 is out of sync with the domain controller.
+
+RDP (and Kerberos) requires accurate time sync (±5 mins max).
+
+ Fix:
+On each affected machine:
+
+powershell
+Copy
+Edit
+# Force time sync with domain controller
+w32tm /resync /nowait
+If it fails, run:
+
+powershell
+Copy
+Edit
+# Reset the time service
+net stop w32time
+w32tm /unregister
+w32tm /register
+net start w32time
+w32tm /resync
+Then retry RDP.
+
+ M3015 – Application Error (FMS Client Cache)
+ "The proxy could not locate or start an FMS Client Cache instance..."
+
+ Likely Cause:
+This isn't an RDP issue — it's the FMS client app failing to initialise after login.
+
+The error mentions:
+
+FMS_WINDOWS_MULTIUSER not being enabled
+
+FMS_HOME environment variable not set
+
+A missing .dll for the FMS client cache proxy
+
+ Fix:
+On M3015, check if it’s a multi-user RDP session host — if yes:
+
+Set environment variable FMS_WINDOWS_MULTIUSER=1
+
+Verify FMS_HOME is correctly defined in system environment variables.
+
+Confirm required *.dll files exist in:
+
+makefile
+Copy
+Edit
+C:\FlexCache\FMSProxy\[64|lib64|dll]\[dlls...]
+Check whether the app runs correctly under:
+
+Local login
+
+Other users
+
+Shared account (e.g. shr-)
+
+ Recommendations
+Machine	Issue	Immediate Fix
+M3076	Clock mismatch for RDP	w32tm /resync with domain controller
+M3079	Same as above	Same time sync reset
+M3015	FMS App Launch Error	Set env vars and confirm FMS_HOME, .dll path
+
+Let me know if you'd like a script to run time sync and log RDP status across all CAD machines.
+
+
+
+
+
+
+
+
+
+logged on with the same generic account and now they using firstname lastname, .	On M3015, check if it’s a multi-user RDP session host — if yes:
+	•	Set environment variable FMS_WINDOWS_MULTIUSER=1
+	•	Verify FMS_HOME is correctly defined in system environment variables.
+	2.	Confirm required *.dll files exist in:
+
+
+likely an application-specific issue triggered by the switch from a shared/generic account (TunnelOps or similar) to individual named user accounts (firstname.lastname).
+
+why:
+
+Why It’s Failing Now With Named Users
+When all users previously logged in as the same shared account:
+
+The FMS app was configured once (registry, environment, file paths).
+
+It ran in a known user profile context, often with relaxed or hardcoded paths like:
+
+makefile
+Copy
+Edit
+C:\Users\TunnelOps\AppData\...
+C:\FlexCache\FMSProxy\dll\...
+Now that users are logging in with individual accounts:
+
+Each session runs under a different profile path, like:
+
+makefile
+Copy
+Edit
+C:\Users\edward.ball\AppData\
+Environment variables such as FMS_HOME, FMS_WINDOWS_MULTIUSER may:
+
+Not be inherited
+
+Not be configured globally
+
+Per-user .dll access or app config might be missing
+
+ What This Means Technically
+The FMS app:
+
+Was likely configured once under the generic profile
+
+Relied on that environment and file structure
+
+Now fails under new users because the env vars or app paths aren't global/system-level
+
+ Resolution Plan
+1. Check if FMS_HOME and FMS_WINDOWS_MULTIUSER are defined system-wide
+Run this as admin:
+
+powershell
+Copy
+Edit
+Get-ChildItem Env: | Where-Object { $_.Name -like "*FMS*" }
+If they only show up under specific users — that's the issue.
+
+2. Fix It: Set Environment Vars System-Wide
+powershell
+Copy
+Edit
+[Environment]::SetEnvironmentVariable("FMS_WINDOWS_MULTIUSER", "1", "Machine")
+[Environment]::SetEnvironmentVariable("FMS_HOME", "C:\Path\To\FMS", "Machine")
+3. Confirm .DLL Path
+Make sure required .dll files in:
+
+makefile
+Copy
+Edit
+C:\FlexCache\FMSProxy\lib64\
+are readable by all users and not tied to TunnelOps-specific ACLs.
+
+4. Bonus – Test With Generic vs Named
+Test this:
+
+Log into M3015 using TunnelOps (if still enabled) → app works?
+
+Log into same machine with ed.ball → app fails?
+
+That confirms the mismatch is in per-user profile/environment setup, not RDP or network.
+
+Let me know if you'd like a detection script that runs on login and warns if FMS variables are missing.
+
+
+
+
+
+
+
+

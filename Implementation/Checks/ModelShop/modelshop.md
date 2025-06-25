@@ -187,6 +187,171 @@ import ace_tools as tools; tools.display_dataframe_to_user(name="Modelshop Devic
 
 
 
+You're asking a very real, enterprise-critical question — and there is a proper, clean way to do it:
+Make the Shared Account behave like a roaming profile or portable workspace across all 20 machines.
+
+ Your Goal:
+One shared account → consistent desktop, OneNote, Teams, localised files, app settings → on any of the 20 machines → no reconfig required.
+
+ Best Practice Option: Use Mandatory Roaming Profile + Centralised Redirection
+Here's how to get that portable environment across multiple machines — cleanly.
+
+ Key Concepts (Simple Terms)
+Concept	Description
+Roaming Profile	Syncs user desktop, app settings, etc. from a server to any machine
+Mandatory Profile	Makes the profile read-only so it doesn’t grow or change per machine
+Folder Redirection	Moves Documents/Desktop/OneNote files to a network share
+Group Policy (GPO)	Used to apply the above settings automatically across the 20 machines
+
+ What You Need to Set Up (High-Level)
+Component	Setup Action
+1. Network Share for Profile	\\server\profiles\shr-modelshop — store the profile here
+2. Create Mandatory Profile	Log in, configure, rename NTUSER.DAT to NTUSER.MAN
+3. Setup GPO for Roaming Profile Path	Link it to shr-modelshop user
+4. Redirect Folders (Desktop, Docs, AppData)	Via GPO to network share
+5. Sync OneNote/Teams to cloud account	Cloud profile must be used for persistence
+6. Lock permissions on profile	Make it read-only for consistency
+
+ Rule 6 Implementation Plan (Full Steps)
+1.  Create Network Share for Profile
+   Command:
+
+powershell
+Copy
+Edit
+New-Item -ItemType Directory -Path "D:\UserProfiles\shr-modelshop"
+New-SmbShare -Name "shr-modelshop" -Path "D:\UserProfiles\shr-modelshop" -FullAccess "shr-modelshop"
+Set NTFS permissions:
+
+shr-modelshop: Read/Write
+
+Others: Deny
+
+2.  Create & Capture the Profile
+   On a clean machine:
+
+Log in as shr-modelshop
+
+Fully configure:
+
+Desktop shortcuts
+
+Teams, OneNote sign-ins
+
+App setup
+
+Wallpaper, settings, local paths etc.
+
+Log off
+
+On that machine:
+
+makefile
+Copy
+Edit
+C:\Users\shr-modelshop
+Copy contents to:
+
+pgsql
+Copy
+Edit
+\\server\profiles\shr-modelshop.v2
+Rename:
+
+Copy
+Edit
+NTUSER.DAT → NTUSER.MAN
+This makes it mandatory (read-only, non-expanding)
+
+3.  Set Roaming Profile Path via AD (or GPO)
+   In AD Users and Computers:
+
+Open shr-modelshop user
+
+Go to Profile tab
+
+Set:
+
+pgsql
+Copy
+Edit
+Profile Path: \\server\profiles\shr-modelshop.v2
+Or via GPO:
+
+pgsql
+Copy
+Edit
+User Configuration → Policies → Admin Templates → System → User Profiles → Set Roaming Profile Path
+4.  Enable Folder Redirection (Optional but Ideal)
+   Use GPO:
+
+pgsql
+Copy
+Edit
+User Configuration → Policies → Windows Settings → Folder Redirection
+Redirect:
+
+Desktop → \\server\shr-modelshop\Desktop
+
+Documents → \\server\shr-modelshop\Documents
+
+AppData (optional but advanced)
+
+Check "Basic - Redirect everyone's folder to the same location".
+
+5.  Teams and OneNote: Use Cloud Sign-In Only
+   Make sure user signs into Office 365 / Teams with shared mailbox account
+
+Ensure OneNote notebooks are saved in OneDrive or SharePoint
+(Local-only notebooks will not roam)
+
+6.  Lock the Profile Down
+   Ensure the server copy of the profile is read-only:
+
+powershell
+Copy
+Edit
+icacls "\\server\profiles\shr-modelshop.v2" /inheritance:r
+icacls "\\server\profiles\shr-modelshop.v2" /grant "shr-modelshop:(RX)"
+ Test Instruction
+Log in to Machine A as shr-modelshop
+→ Confirm setup appears as expected
+
+Log out
+
+Log in to Machine B as shr-modelshop
+→ Should look identical, same apps, same shortcuts
+
+ Result:
+Every machine will load the same config from the central profile share.
+Any changes to the local desktop won't persist — keeps it clean, reliable, and reproducible.
+
+ What Not to Do
+❌ Don’t rely on copying AppData\Local manually — won’t work reliably
+
+❌ Don’t try to sync profiles using robocopy or OneDrive folder tricks
+
+❌ Don’t allow profile bloat — mandatory profile avoids this
+
+Would you like me to generate the full GPO .admx steps and share pre-filled .reg or .xml exports for your environment? Let’s get it right the first time.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
