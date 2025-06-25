@@ -116,3 +116,127 @@ Audit Visibility
 Enabled via Event Viewer
 
 
+
+
+Paths
+
+
+C:
+HOMEPATH                       \Users\adminpdavidson
+IGCCSVC_DB                     AQAAANCMnd8BFdERjHoAwE/Cl+sBAAAAxOhYeutYNUqBRGH6Az9VGAQAAAACAAAAAAAQZgAAAAEAACAAAAAaV...
+JAVA_HOME                      C:\PLM\JAVA\X64\
+JRE_HOME                       C:\PLM\JAVA\X64
+JT_OGL41                       1
+LOCALAPPDATA                   C:\Users\adminpdavidson\AppData\Local
+LOGONSERVER                    \\FACT-DC01
+NUMBER_OF_PROCESSORS           24
+OneDrive                       C:\Users\adminpdavidson\OneDrive
+OS                             Windows_NT
+Path                           C:\PLM\JAVA\X64\bin\;C:\PLM\JAVA\X86\bin\;C:\Program Files (x86)\Common Files\Oracle\...
+PATHEXT                        .COM;.EXE;.BAT;.CMD;.VBS;.VBE;.JS;.JSE;.WSF;.WSH;.MSC;.CPL
+PROCESSOR_ARCHITECTURE         AMD64
+PROCESSOR_IDENTIFIER           Intel64 Family 6 Model 151 Stepping 2, GenuineIntel
+PROCESSOR_LEVEL                6
+PROCESSOR_REVISION             9702
+ProgramData                    C:\ProgramData
+ProgramFiles                   C:\Program Files
+ProgramFiles(x86)              C:\Program Files (x86)
+ProgramW6432                   C:\Program Files
+PSModulePath                   C:\Users\adminpdavidson\Documents\WindowsPowerShell\Modules;C:\Program Files\WindowsP...
+PUBLIC                         C:\Users\Public
+SESSIONNAME                    RDP-Tcp#47
+SN_AGENT_HOME_DIR              C:\Program Files\ServiceNow\agent-client-collector\
+SPLM_LICENSE_SERVER            7000@FACT-LICA,7000@FACT-LICB,7000@FACT-LICC
+SystemDrive                    C:
+SystemRoot                     C:\windows
+TCVIS_CLUSTER_PATH             C:\PLM\TC12\Visualization\Products\Mockup\VisView.exe
+TEMP                           C:\Users\ADMINP~1\AppData\Local\Temp
+TMP                            C:\Users\ADMINP~1\AppData\Local\Temp
+UATDATA                        C:\windows\CCM\UATData\D9F8C395-CAB8-491d-B8AC-179A1FE1BE77
+UGII_3DCONNEXION_DIR           C:\Program Files\3Dconnexion\3DxWare\3DxNX\ugii_dir\
+UGII_3DCONNEXION_DIR32         C:\Program Files\3Dconnexion\3DxWare\3DxNX\ugii_dir32\
+UGII_BASE_DIR                  C:\PLM\NX_2007_Series
+UGII_LANG                      english
+USERDNSDOMAIN                  FACTORY.WF1
+USERDOMAIN                     FACTORY
+USERDOMAIN_ROAMINGPROFILE      FACTORY
+USERNAME                       adminpdavidson
+USERPROFILE                    C:\Users\adminpdavidson
+windir                         C:\windows
+ZES_ENABLE_SYSMAN              1
+
+
+portal.bat launches TeamCentre
+
+@echo off
+rem
+
+setlocal
+
+rem TPR is short for TC_PORTAL_ROOT to reduce command line length
+title Teamcenter Rich Client
+
+call "C:\PLM\TC12\Tc12407\install\tem_init.bat"
+
+set TPR=C:\PLM\TC12\Tc12407\portal
+if not defined FMS_HOME set FMS_HOME=C:\PLM\TC12\Tc12407\tccs
+
+rem use AUX_PATH env var for any additional required paths
+rem save original path for external applications
+set ORIGINAL_PATH=%PATH%
+rem for optimal startup performance, keep the PATH length at a minimum
+set PATH=%SYSTEMROOT%\system32;%FMS_HOME%\bin;%FMS_HOME%\lib;%TPR%;%AUX_PATH%
+
+set JAVA_HOME=%TC_JRE_HOME%
+set JRE_HOME=%TC_JRE_HOME%
+
+
+:start_portal
+
+cd /d %TPR%
+
+set CLASSPATH=.;
+
+set VM_XMX=8G
+
+set VM_XMS=8G
+
+
+
+rem Set DJIPJL_VMARG environment variable
+
+IF EXIST "%TPR%\djipjl\setenv.cmd" call "%TPR%\djipjl\setenv.cmd"
+
+
+
+@echo Starting Teamcenter Rich Client...
+
+start Teamcenter.exe %* -vm "%JRE_HOME%\bin\javaw.exe" -vmargs -Xmx%VM_XMX% -Xms%VM_XMS% -Xverify:none -XX:SurvivorRatio=6 -XX:+UseParallelGC -XX:+DisableExplicitGC -Dexpressioncache.enable=Y -XX:MaxPermSize=512m -Xbootclasspath/a:"%JRE_HOME%\lib\plugin.jar";"%JRE_HOME%\lib\deploy.jar";"%JRE_HOME%\lib\javaws.jar"
+
+
+
+TeamCentre Members
+
+Go for all of ATF:
+
+Neil hayes
+Mich Hackwood
+Anna Perry
+Keith Forsythe
+Alex Wibawa
+Thomas Sagar
+Edward Ball
+James Busfield
+Calum Maciver
+Ben Stokes
+Christina Sullivan
+Andrew Wilkie
+Luke Deacon
+Ben Hansen
+Harrison Towell
+Conor Crickmore
+
+
+
+
+

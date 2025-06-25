@@ -182,15 +182,6 @@ df = pd.DataFrame(device_actions)
 import ace_tools as tools; tools.display_dataframe_to_user(name="Modelshop Device Action Plan", dataframe=df)
 
 
-The table above contains the full breakdown of device categories and the required actions for each machine under the modelshop account remediation project.
-
-Let me know if you’d like:
-
-A PowerShell script to automate user removal from local admin groups,
-
-The AD group creation commands for shr-modelshop,
-
-Or a full Rule 6 deployment script for this transition. 
 
 
 

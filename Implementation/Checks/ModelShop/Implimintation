@@ -1,4 +1,191 @@
 
+Rule 6 Implementation: Strategic Account Migration Plan
+Title: shr-modelshop Shared Account – AD, Group, Access Control and Governance Setup
+1. Purpose
+To create the shr-modelshop shared AD account and associated security groups, configure access policies for login and RDP, and apply identity governance policies in line with Microsoft best practice and WF1 security requirements.
+
+2. Exact Commands and Steps
+🔹 Step 1: Create the shr-modelshop Shared Account
+Full Path:
+Active Directory Users and Computers (ADUC) → Shared Accounts OU
+
+File Creation/Command:
+powershell
+Copy
+Edit
+New-ADUser -Name "shr-modelshop" `
+           -SamAccountName "shr-modelshop" `
+           -UserPrincipalName "shr-modelshop@williamsf1.com" `
+           -Path "OU=SharedAccounts,DC=factory,DC=wf1" `
+           -DisplayName "Modelshop Shared Account" `
+           -Description "Shared account for Modelshop team operations" `
+           -AccountPassword (Read-Host -AsSecureString "Set initial password") `
+           -Enabled $true `
+           -PasswordNeverExpires $true `
+           -CannotChangePassword $true `
+           -UserMustChangePassword $false
+Comment:
+Creates a secure AD Shared Account with M365 UPN for domain + cloud usage. Password policy enforced via governance below.
+
+🔹 Step 2: Create AD Groups (RW, RO, LAC, RDC)
+Full Path:
+Active Directory Users and Computers (ADUC) → Security Groups OU
+
+File Creation/Command:
+powershell
+Copy
+Edit
+New-ADGroup -Name "grp-modelshopRW" -GroupScope Global -GroupCategory Security -Path "OU=SecurityGroups,DC=factory,DC=wf1" -Description "RW Access to Modelshop Network Resources"
+New-ADGroup -Name "grp-modelshopRO" -GroupScope Global -GroupCategory Security -Path "OU=SecurityGroups,DC=factory,DC=wf1" -Description "RO Access to Modelshop Network Resources"
+New-ADGroup -Name "grp-modelshopLAC" -GroupScope Global -GroupCategory Security -Path "OU=SecurityGroups,DC=factory,DC=wf1" -Description "Login Access Control for shr-modelshop"
+New-ADGroup -Name "grp-modelshopRDC" -GroupScope Global -GroupCategory Security -Path "OU=SecurityGroups,DC=factory,DC=wf1" -Description "Remote Desktop Control to Category 8 Devices"
+Comment:
+Grants precise separation of concerns. Only members of appropriate groups gain access to login, drive mapping, or RDP functionality.
+
+🔹 Step 3: Assign Group Memberships
+File Edit Command:
+powershell
+Copy
+Edit
+# Add shr-modelshop to required groups
+Add-ADGroupMember -Identity "grp-modelshopRW" -Members "shr-modelshop"
+Add-ADGroupMember -Identity "grp-modelshopLAC" -Members "shr-modelshop"
+
+# Add named users to RDC group
+$rdcUsers = @("mark.peers", "julian.davies")
+$rdcUsers | ForEach-Object { Add-ADGroupMember -Identity "grp-modelshopRDC" -Members $_ }
+Comment:
+Only approved users can log in to Category 8 devices via RDP. No excessive permissions are granted.
+
+🔹 Step 4: Enforce LAC on Category 8 Devices
+Full File Path:
+Group Policy Management Console (GPMC) → GPO: WF1-Modelshop-Device-LAC
+
+File Edit Command:
+Create GPO and link to Category 8 device OU.
+
+Edit Computer Configuration → Windows Settings → Security Settings → Local Policies → User Rights Assignment
+
+Allow log on locally → grp-modelshopLAC, Administrators
+
+Deny log on locally → Remove modelshop, deny everyone else if not required
+
+Edit Computer Configuration → Policies → Security Settings → Restricted Groups
+
+Add Administrators → Only allow DPT-Admin, IT-Operations, and remove modelshop
+
+🔹 Step 5: Enforce RDC Access to Category 8 Devices
+GPO: WF1-Modelshop-RDC-Access
+File Edit Command:
+Edit Computer Configuration → Policies → Windows Settings → Security Settings → Local Policies → User Rights Assignment
+
+Allow log on through Remote Desktop Services → grp-modelshopRDC, DPT-Admin
+
+Verify:
+
+powershell
+Copy
+Edit
+(Get-WmiObject -Class Win32_TerminalServiceSetting).AllowTSConnections
+
+
+🔹 Step 6: Identity Governance – Enforce Shared Account Policy
+File Edit Command:
+powershell
+Copy
+Edit
+# Set AD Notes for auditing
+Set-ADUser -Identity "shr-modelshop" `
+    -Add @{
+        info="Business Owner: Mark Peers; Must update password annually; Use IT vault on change"
+        description="Modelshop shared account for Category 8 device access and shared workflows"
+    }
+Additional Governance:
+Enforce password reset every 12 months:
+
+GPO or Azure Conditional Access
+
+Record and store current password in 1Password
+
+If changed, update vault and notify IT Support securely
+
+
+🔹 Step 7: Verify Everything
+Test Instruction:
+Use a Category 8 device.
+
+Log in using shr-modelshop; confirm login success.
+
+Attempt RDP from unauthorised user → must fail.
+
+Attempt RDP from julian.davies → must succeed.
+
+Attempt login as shr-modelshop on Category 3 device → must fail.
+
+Confirm network drive mounts and app access works.
+
+ Final Outcome
+shr-modelshop account securely provisioned
+
+PoLP enforced across login, file access, and remote control
+
+Legacy account modelshop fully isolated
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # Define an implementation plan with sequencing and dependencies
 implementation_steps = [
     ("Preparation", "Review the full device list and confirm Category 3 and 8 classification."),
