@@ -12,12 +12,13 @@
 #>
 
 # ===[ 1. Configurable Variables ]===
-$UserProfile    = "C:\Users\modelshop"
-$BackupRoot     = "D:\Backups\Modelshop"
+$UserProfile    = "C:\Users\paul.davidson"
+$BackupRoot     = "D:\Backup"
 $TimeStamp      = Get-Date -Format "yyyy-MM-dd_HH-mm"
 $BackupTarget   = Join-Path $BackupRoot $TimeStamp
 $LogFile        = Join-Path $BackupTarget "robocopy.log"
-$RetentionCount = 5   # Keep last 5 backups
+$SummaryPath    = Join-Path $BackupTarget "summary.txt"
+$RetentionCount = 5
 
 # ===[ 2. Create Target Directory ]===
 if (!(Test-Path $BackupTarget)) {
@@ -29,25 +30,25 @@ Write-Host "`n[+] Backing up $UserProfile to $BackupTarget`n"
 
 robocopy $UserProfile $BackupTarget /MIR /COPYALL /XJ /R:2 /W:5 /LOG:$LogFile
 
+# ===[ 4. Handle Exit Code ]===
 if ($LASTEXITCODE -le 7) {
     Write-Host "[✓] Backup completed successfully with exit code $LASTEXITCODE"
 } else {
     Write-Warning "[!] Backup failed or partially completed. Exit code: $LASTEXITCODE"
 }
 
-# ===[ 4. Retention Logic (optional) ]===
+# ===[ 5. Retention Logic ]===
 $AllBackups = Get-ChildItem -Path $BackupRoot -Directory | Sort-Object Name -Descending
 if ($AllBackups.Count -gt $RetentionCount) {
     $ToDelete = $AllBackups | Select-Object -Skip $RetentionCount
     foreach ($dir in $ToDelete) {
-        Write-Host "[−] Removing old backup: $($dir.Name)"
+        Write-Host "[-] Removing old backup: $($dir.Name)"
         Remove-Item -Path $dir.FullName -Recurse -Force
     }
 }
 
-# ===[ 5. Optional: Export Summary Report ]===
-$SummaryPath = Join-Path $BackupTarget "summary.txt"
-@"
+# ===[ 6. Write Summary File ]===
+$SummaryContent = @"
 Modelshop Profile Backup Summary
 --------------------------------
 Date:       $(Get-Date)
@@ -55,6 +56,8 @@ Source:     $UserProfile
 Target:     $BackupTarget
 Exit Code:  $LASTEXITCODE
 Log File:   $LogFile
-"@ | Out-File -Encoding UTF8 $SummaryPath
+"@
+
+$SummaryContent | Out-File -Encoding UTF8 $SummaryPath
 
 Write-Host "`n[✓] Backup script completed.`n"
