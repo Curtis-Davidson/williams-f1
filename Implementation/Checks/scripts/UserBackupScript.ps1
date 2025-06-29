@@ -12,7 +12,7 @@
 
 # ===[ 1. Configurable Variables ]===
 $UserProfile    = "C:\Users\paul.davidson"
-$BackupRoot     = "D:\Backup"
+$BackupRoot     = "C:\Backup"
 $TimeStamp      = Get-Date -Format "yyyy-MM-dd_HH-mm"
 $BackupTarget   = Join-Path $BackupRoot $TimeStamp
 $LogFile        = Join-Path $BackupTarget "robocopy.log"
