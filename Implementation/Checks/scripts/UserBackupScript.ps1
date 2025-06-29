@@ -1,13 +1,12 @@
 <#
 =====================================================================================
-  backup-modelshop.ps1 — Enterprise-grade profile backup for shared 'modelshop' user
-  Author: Paul R Davidson (UT)
+  UserBackupScript.ps1 — Robust ASCII-safe profile backup
+  Author: Paul R Davidson (Urbantek)
   Purpose:
-    - Backup full user profile (incl. AppData)
-    - Preserve permissions/metadata
-    - Generate timestamped folders
-    - Maintain log per backup
-    - Optional retention policy (keep last N)
+    - Backup full user profile
+    - Preserve permissions and metadata
+    - Timestamped folders and backup logs
+    - Auto-retention of last N backups
 =====================================================================================
 #>
 
@@ -26,15 +25,17 @@ if (!(Test-Path $BackupTarget)) {
 }
 
 # ===[ 3. Start Robocopy Backup ]===
-Write-Host "`n[+] Backing up $UserProfile to $BackupTarget`n"
+Write-Host ""
+Write-Host "[INFO] Backing up $UserProfile to $BackupTarget"
+Write-Host ""
 
 robocopy $UserProfile $BackupTarget /MIR /COPYALL /XJ /R:2 /W:5 /LOG:$LogFile
 
 # ===[ 4. Handle Exit Code ]===
 if ($LASTEXITCODE -le 7) {
-    Write-Host "[✓] Backup completed successfully with exit code $LASTEXITCODE"
+    Write-Host "[INFO] Backup completed successfully. Exit code: $LASTEXITCODE"
 } else {
-    Write-Warning "[!] Backup failed or partially completed. Exit code: $LASTEXITCODE"
+    Write-Warning "[WARNING] Backup failed or partially completed. Exit code: $LASTEXITCODE"
 }
 
 # ===[ 5. Retention Logic ]===
@@ -42,15 +43,15 @@ $AllBackups = Get-ChildItem -Path $BackupRoot -Directory | Sort-Object Name -Des
 if ($AllBackups.Count -gt $RetentionCount) {
     $ToDelete = $AllBackups | Select-Object -Skip $RetentionCount
     foreach ($dir in $ToDelete) {
-        Write-Host "[-] Removing old backup: $($dir.Name)"
+        Write-Host "[INFO] Removing old backup: $($dir.Name)"
         Remove-Item -Path $dir.FullName -Recurse -Force
     }
 }
 
 # ===[ 6. Write Summary File ]===
 $SummaryContent = @"
-Modelshop Profile Backup Summary
---------------------------------
+User Profile Backup Summary
+---------------------------
 Date:       $(Get-Date)
 Source:     $UserProfile
 Target:     $BackupTarget
@@ -58,6 +59,8 @@ Exit Code:  $LASTEXITCODE
 Log File:   $LogFile
 "@
 
-$SummaryContent | Out-File -Encoding UTF8 $SummaryPath
+$SummaryContent | Out-File -Encoding ASCII $SummaryPath
 
-Write-Host "`n[✓] Backup script completed.`n"
+Write-Host ""
+Write-Host "[INFO] Backup script completed."
+Write-Host ""
