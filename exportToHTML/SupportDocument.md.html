@@ -1,0 +1,197 @@
+<html>
+<head>
+<title>SupportDocument.md</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cf8e6d;}
+.s1 { color: #bcbec4;}
+.s2 { color: #bcbec4;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+SupportDocument.md</font>
+</center></td></tr></table>
+<pre><span class="s0"># </span><span class="s2">Machine Shop Shared Account Transition – Support Summary</span>
+<span class="s1">**</span><span class="s2">Project</span><span class="s1">:** </span><span class="s2">Shared Account Remediation  </span>
+<span class="s1">**</span><span class="s2">Location</span><span class="s1">:** </span><span class="s2">Machine Shop, WF1 Campus  </span>
+<span class="s1">**</span><span class="s2">Date</span><span class="s1">:** </span><span class="s2">01/08/2025  </span>
+<span class="s1">**</span><span class="s2">Prepared by</span><span class="s1">:** </span><span class="s2">Paul Davidson  </span>
+<span class="s1">**</span><span class="s2">Account ID</span><span class="s1">:** </span><span class="s2">`shr-machine-mfg`  </span>
+<span class="s1">**</span><span class="s2">Status</span><span class="s1">:** </span><span class="s2">Implemented and Active</span>
+
+<span class="s0">---</span>
+
+<span class="s0">## </span><span class="s2">Key Contacts</span>
+
+<span class="s0">- </span><span class="s1">**</span><span class="s2">Conner Murphy</span><span class="s1">** </span><span class="s2">– Metallic Manufacturing Manager</span>
+<span class="s0">- </span><span class="s1">**</span><span class="s2">Simon Bunce</span><span class="s1">** </span><span class="s2">– Team Leader </span><span class="s1">(</span><span class="s2">Turning</span><span class="s1">)</span><span class="s2">, point of contact for implementation support</span>
+
+<span class="s2">These individuals supported, approved, and coordinated the transition to the `shr-machine-mfg` shared account.</span>
+
+<span class="s0">---</span>
+
+<span class="s0">## </span><span class="s2">1. Purpose of Change</span>
+
+<span class="s2">Establish a secure shared account </span><span class="s1">(</span><span class="s2">`shr-machine-mfg`</span><span class="s1">) </span><span class="s2">for the Machine Shop to support shift-based collaborative access across designated terminals.  </span>
+<span class="s2">This replaces legacy generic or personal logins with a single, access-controlled, auditable identity.</span>
+
+<span class="s0">---</span>
+
+<span class="s0">## </span><span class="s2">2. Devices Using `shr-machine-mfg` </span><span class="s1">(</span><span class="s2">Category 8</span><span class="s1">)</span>
+
+<span class="s2">The following eight machines are explicitly assigned to the shared Machine Shop account</span><span class="s1">:</span>
+
+<span class="s0">- </span><span class="s1">**</span><span class="s2">SEIKI21</span><span class="s1">**</span>
+<span class="s0">- </span><span class="s1">**</span><span class="s2">M8687</span><span class="s1">**</span>
+<span class="s0">- </span><span class="s1">**</span><span class="s2">W8841</span><span class="s1">**</span>
+<span class="s0">- </span><span class="s1">**</span><span class="s2">M3147</span><span class="s1">**</span>
+<span class="s0">- </span><span class="s1">**</span><span class="s2">M3104</span><span class="s1">**</span>
+<span class="s0">- </span><span class="s1">**</span><span class="s2">M1909</span><span class="s1">**</span>
+<span class="s0">- </span><span class="s1">**</span><span class="s2">M8662</span><span class="s1">**</span>
+<span class="s0">- </span><span class="s1">**</span><span class="s2">W9474</span><span class="s1">**</span>
+
+<span class="s2">Each device is</span><span class="s1">:</span>
+
+<span class="s0">- </span><span class="s2">Configured for exclusive login by `shr-machine-mfg`</span>
+<span class="s0">- </span><span class="s2">Machine login lockdown applied on the AD user object itself </span><span class="s1">(</span><span class="s2">not via GPO or device OU</span><span class="s1">)</span>
+<span class="s0">- </span><span class="s2">Group Policy enforced to restrict local user or domain user access</span>
+<span class="s0">- </span><span class="s2">Enrolled in the `grp-machine-mfgLAC` </span><span class="s1">(</span><span class="s2">Login Access Control</span><span class="s1">) </span><span class="s2">group</span>
+<span class="s0">- </span><span class="s2">Assigned the correct drive mappings and application permissions</span>
+<span class="s0">- </span><span class="s2">Under monitoring as part of the account remediation rollout</span>
+
+<span class="s2">Legacy user directories remain temporarily accessible via desktop shortcut for document recovery and transition purposes.</span>
+
+<span class="s0">---</span>
+
+<span class="s0">## </span><span class="s2">3. Access Groups and Controls</span>
+
+<span class="s1">**</span><span class="s2">Active Directory Groups</span><span class="s1">:**</span>
+
+<span class="s0">- </span><span class="s2">`grp-machine-mfgLAC` – Controls which devices `shr-machine-mfg` may log into</span>
+<span class="s0">- </span><span class="s2">`grp-machine-mfgRW` – Provides mapped drive read/write access</span>
+<span class="s0">- </span><span class="s2">`grp-machine-mfgRDC` – Optional remote access group </span><span class="s1">(</span><span class="s2">if required later</span><span class="s1">)</span>
+
+<span class="s2">These are used to ensure minimal access surface, strict scope enforcement, and scalable management.</span>
+
+<span class="s0">---</span>
+
+<span class="s0">## </span><span class="s2">4. Keeper Access &amp; Account Custodians</span>
+
+<span class="s2">Password and MFA credentials for `shr-machine-mfg` are stored securely in </span><span class="s1">**</span><span class="s2">Keeper</span><span class="s1">**</span><span class="s2">, following IT security policy.</span>
+
+<span class="s2">Access has been granted to the following team leaders across the full shift rotation</span><span class="s1">:</span>
+
+<span class="s0">- </span><span class="s1">**</span><span class="s2">Bleddyn Davies</span><span class="s1">** </span><span class="s2">– Team Leader, Milling </span><span class="s1">(</span><span class="s2">Mon–Thurs</span><span class="s1">)</span>
+<span class="s0">- </span><span class="s1">**</span><span class="s2">Simon Bunce</span><span class="s1">** </span><span class="s2">– Team Leader, Turning </span><span class="s1">(</span><span class="s2">Mon–Thurs</span><span class="s1">)</span>
+<span class="s0">- </span><span class="s1">**</span><span class="s2">Carl Smith</span><span class="s1">** </span><span class="s2">– Team Leader, Prototype Machine Shop </span><span class="s1">(</span><span class="s2">Mon–Thurs</span><span class="s1">)</span>
+<span class="s0">- </span><span class="s1">**</span><span class="s2">Ewan Divine</span><span class="s1">** </span><span class="s2">– Team Leader, Night Shift </span><span class="s1">(</span><span class="s2">Mon–Thurs</span><span class="s1">)</span>
+<span class="s0">- </span><span class="s1">**</span><span class="s2">Jon Othen</span><span class="s1">** </span><span class="s2">– Team Leader, Weekend Shift </span><span class="s1">(</span><span class="s2">Fri–Sun</span><span class="s1">)</span>
+<span class="s0">- </span><span class="s1">**</span><span class="s2">Steve Green</span><span class="s1">** </span><span class="s2">– Weekday Supervisor, Metallic Production</span>
+
+<span class="s2">These custodians manage login issues, credential resets, and access control within their respective shifts.</span>
+
+<span class="s0">---</span>
+
+<span class="s0">## </span><span class="s2">5. Email and Teams Access</span>
+
+<span class="s0">- </span><span class="s2">`shr-machine-mfg` has </span><span class="s1">**</span><span class="s2">no mailbox or Teams access</span><span class="s1">**</span>
+<span class="s0">- </span><span class="s2">All comms are handled by team leads or personal accounts</span>
+<span class="s0">- </span><span class="s2">Shared mailbox can be provisioned later if required for workflow</span>
+
+<span class="s0">---</span>
+
+<span class="s0">## </span><span class="s2">6. Application and Drive Access</span>
+
+<span class="s1">**</span><span class="s2">Mapped Drives</span><span class="s1">:**</span>
+
+<span class="s0">- </span><span class="s2">`T</span><span class="s1">:</span><span class="s2">\ → \\factory.wf1\DFS2\MachineShop`</span>
+<span class="s0">- </span><span class="s2">`X</span><span class="s1">:</span><span class="s2">\ → \\factory.wf1\wf1\user_cae_files2\shr-machine-mfg`</span>
+<span class="s0">- </span><span class="s2">`Y</span><span class="s1">:</span><span class="s2">\ → \\factory.wf1\wf1\pdmfiles\cae_common`</span>
+
+<span class="s1">**</span><span class="s2">Applications</span><span class="s1">:**</span>
+
+<span class="s0">- </span><span class="s2">Relevant CAD tools, CNC interfaces, and shopfloor utilities</span>
+<span class="s0">- </span><span class="s2">Access tested across all 8 machines under the shared context</span>
+
+<span class="s0">---</span>
+
+<span class="s0">## </span><span class="s2">7. Canon uniFLOW – Delegated Print Job Access Overview</span>
+
+<span class="s2">Canon uniFLOW has been implemented to support secure printing across the </span><span class="s1">**</span><span class="s2">Milling</span><span class="s1">** </span><span class="s2">and </span><span class="s1">**</span><span class="s2">Turning</span><span class="s1">** </span><span class="s2">divisions of the Machine Shop, both of which use `shr-machine-mfg`.</span>
+
+<span class="s2">Two dedicated Canon printers have been provisioned, with release access controlled via AD-integrated card readers.</span>
+
+<span class="s1">**</span><span class="s2">Delegation Mechanism</span><span class="s1">:**</span>
+
+<span class="s0">- </span><span class="s2">Print jobs sent from `shr-machine-mfg` can be accessed by users in the approved AD group</span>
+<span class="s0">- </span><span class="s2">Users retrieve print jobs securely using their individual access cards</span>
+<span class="s0">- </span><span class="s2">Supports over 40 users across shifts</span>
+
+<span class="s2">This setup ensures</span><span class="s1">:</span>
+
+<span class="s0">- </span><span class="s2">Secure print release per user</span>
+<span class="s0">- </span><span class="s2">Seamless operation across teams</span>
+<span class="s0">- </span><span class="s2">No exposure of sensitive prints to unauthorised users</span>
+
+<span class="s1">**</span><span class="s2">Canon uniFLOW supports delegation to</span><span class="s1">:**</span>
+
+<span class="s0">- </span><span class="s2">Individual AD users</span>
+<span class="s0">- </span><span class="s2">AD groups </span><span class="s1">(</span><span class="s2">used here for shift-based efficiency</span><span class="s1">)</span>
+
+<span class="s2">Authorised users can</span><span class="s1">:</span>
+
+<span class="s0">- </span><span class="s2">View</span>
+<span class="s0">- </span><span class="s2">Release</span>
+<span class="s0">- </span><span class="s2">Optionally delete</span>
+
+<span class="s2">print jobs submitted by another user or shared account.</span>
+
+<span class="s0">---</span>
+
+<span class="s0">## </span><span class="s2">8. User Communication &amp; Support</span>
+
+<span class="s0">- </span><span class="s2">Machines labelled and documented on-site</span>
+<span class="s0">- </span><span class="s2">Shortcuts placed on desktops to</span><span class="s1">:</span>
+    <span class="s0">- </span><span class="s2">Access legacy `machineshop` user data</span>
+    <span class="s0">- </span><span class="s2">Launch Keeper login and help guide</span>
+
+<span class="s2">Team leads have been briefed and are monitoring login workflows during transition.  </span>
+<span class="s2">All users aware that local data will not persist if machine is re-imaged.</span>
+
+<span class="s0">---</span>
+
+<span class="s0">## </span><span class="s2">9. Admin Rights and Policy Cleanup</span>
+
+<span class="s0">- </span><span class="s2">Local admin rights removed for all users except IT</span>
+<span class="s0">- </span><span class="s2">Legacy `machineshop` user account disabled</span>
+<span class="s0">- </span><span class="s2">Confirmed removal from Local Admins group</span>
+<span class="s0">- </span><span class="s2">GPO enforced</span><span class="s1">: </span><span class="s2">screensaver lock, password complexity, inactivity timeout</span>
+
+<span class="s0">---</span>
+
+<span class="s0">## </span><span class="s2">10. Reversion Plan</span>
+
+<span class="s2">If issues arise</span><span class="s1">:</span>
+
+<span class="s0">- </span><span class="s2">`machineshop` legacy account can be temporarily re-enabled </span><span class="s1">(</span><span class="s2">with IT approval</span><span class="s1">)</span>
+<span class="s0">- </span><span class="s2">Local admin elevation available on emergency basis </span><span class="s1">(</span><span class="s2">tracked by service desk</span><span class="s1">)</span>
+<span class="s0">- </span><span class="s2">Credentials recoverable from Keeper at all times</span>
+
+<span class="s0">---</span>
+
+<span class="s0">## </span><span class="s2">11. Audit &amp; Documentation</span>
+
+<span class="s0">- </span><span class="s2">Entry created in Shared Account Register</span>
+<span class="s0">- </span><span class="s2">Confluence page updated with</span><span class="s1">:</span>
+    <span class="s0">- </span><span class="s2">Keeper custodian list</span>
+    <span class="s0">- </span><span class="s2">Device allocation</span>
+    <span class="s0">- </span><span class="s2">Group memberships</span>
+    <span class="s0">- </span><span class="s2">Drive mappings</span>
+<span class="s0">- </span><span class="s2">Account tagged with Project ID</span><span class="s1">: **</span><span class="s2">P-135901</span><span class="s1">**</span>
+
+<span class="s0">---</span></pre>
+</body>
+</html>
