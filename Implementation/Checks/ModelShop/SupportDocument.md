@@ -32,6 +32,21 @@ The following machines are now restricted to the **`shr-modelshop`** account:
 
 - **M1262**, **W9014**, **M9504**, **W9478**, **M9062**, **W9435**, **W9058**
 - **M3123**, **L10556**, **L12048**, **creaform**, **L2464**
+  The shared account **SHR-MODELSHOP** has been restricted to log on only to the following machines as part of the shared account lockdown policy:
+
+- **M1262**
+- **M9062**
+- **W9478**
+- **M9504**
+- **W9014**
+- **W9435**
+- **L2464** *(Creaform 1)*
+- **L10556** *(Creaform 2)*
+- **Creaform**
+- **L12048** *(Creaform 3)*
+
+These restrictions have been implemented to ensure secure, role-specific access and are aligned with our standardised shared account control framework. Any authentication attempts from machines outside this list will be denied at the domain controller level.
+
 
 Standard setup for these devices includes:
 - Access to required apps (e.g. Teamcenter, NX, Creaform VX, PolyWorks).
