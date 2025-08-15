@@ -1,0 +1,121 @@
+<html>
+<head>
+<title>CanonUniFlow.md</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cf8e6d;}
+.s1 { color: #bcbec4;}
+.s2 { color: #bcbec4;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+CanonUniFlow.md</font>
+</center></td></tr></table>
+<pre><span class="s0"># </span><span class="s2">Canon uniFLOW – AD Group Delegation for Access Card Print Release</span>
+
+<span class="s0">## </span><span class="s2">Purpose</span>
+<span class="s2">To enable individual users in the Machine Shop to release print jobs using their own building access cards, while jobs are submitted centrally using a shared account </span><span class="s1">(</span><span class="s2">e.g. `shr-machine-mfg`</span><span class="s1">)</span><span class="s2">. This ensures secure, auditable release without requiring multiple users to log in with the shared account directly.</span>
+
+<span class="s0">---</span>
+
+<span class="s0">## </span><span class="s2">Scenario Summary</span>
+
+<span class="s0">- </span><span class="s2">All staff in the Machine Shop have building access cards.</span>
+<span class="s0">- </span><span class="s2">Print jobs are submitted from a shared PC using the `shr-machine-mfg` account.</span>
+<span class="s0">- </span><span class="s2">Users will authenticate at the Canon device using their own access card.</span>
+<span class="s0">- </span><span class="s2">A dedicated AD group </span><span class="s1">(</span><span class="s2">`uniFLOW-MachineShop-Delegates`</span><span class="s1">) </span><span class="s2">will control who is authorised to release jobs from the print queue.</span>
+<span class="s0">- </span><span class="s2">This avoids shared PINs or passwords and enables individual accountability.</span>
+
+<span class="s0">---</span>
+
+<span class="s0">## </span><span class="s2">Systems Involved</span>
+
+<span class="s0">- </span><span class="s2">Active Directory Domain Controller</span>
+<span class="s0">- </span><span class="s2">Canon uniFLOW Admin Console</span><span class="s1">: </span><span class="s2">`https</span><span class="s1">:</span><span class="s2">//</span><span class="s1">&lt;</span><span class="s2">uniflow-server</span><span class="s1">&gt;</span><span class="s2">/uniflow`</span>
+<span class="s0">- </span><span class="s2">Target printer</span><span class="s1">: </span><span class="s2">`shr-machine-mfg`</span>
+<span class="s0">- </span><span class="s2">Canon MFDs with card readers</span>
+<span class="s0">- </span><span class="s2">Existing building access control system </span><span class="s1">(</span><span class="s2">card-based</span><span class="s1">)</span>
+
+<span class="s0">---</span>
+
+<span class="s0">## </span><span class="s2">Step 1</span><span class="s1">: </span><span class="s2">Create the AD Group </span><span class="s1">(</span><span class="s2">if not already present</span><span class="s1">)</span>
+
+<span class="s0">1. </span><span class="s2">Open `Active Directory Users and Computers`.</span>
+<span class="s0">2. </span><span class="s2">Navigate to the correct Organisational Unit.</span>
+<span class="s0">3. </span><span class="s2">Right-click </span><span class="s1">&gt; </span><span class="s2">`New </span><span class="s1">&gt; </span><span class="s2">Group`.</span>
+<span class="s0">4. </span><span class="s2">Group Name</span><span class="s1">: </span><span class="s2">`uniFLOW-MachineShop-Delegates`</span>
+<span class="s0">5. </span><span class="s2">Group Type</span><span class="s1">: </span><span class="s2">Security, Scope</span><span class="s1">: </span><span class="s2">Global.</span>
+<span class="s0">6. </span><span class="s2">Add all Machine Shop staff to this group under the `Members` tab.</span>
+<span class="s0">7. </span><span class="s2">Click Apply and OK.</span>
+
+<span class="s0">---</span>
+
+<span class="s0">## </span><span class="s2">Step 2</span><span class="s1">: </span><span class="s2">Confirm uniFLOW Card Registration</span>
+
+<span class="s0">1. </span><span class="s2">Ensure all users have their card registered within uniFLOW</span><span class="s1">:</span>
+    <span class="s0">- </span><span class="s2">Users must have their card number linked to their AD account in uniFLOW.</span>
+    <span class="s0">- </span><span class="s2">This may be done by self-registration at device or bulk import via admin.</span>
+<span class="s0">2. </span><span class="s2">Test card login at any uniFLOW-enabled device.</span>
+<span class="s0">3. </span><span class="s2">Users must see their own print jobs </span><span class="s1">(</span><span class="s2">if any</span><span class="s1">) </span><span class="s2">and be able to log in.</span>
+
+<span class="s0">---</span>
+
+<span class="s0">## </span><span class="s2">Step 3</span><span class="s1">: </span><span class="s2">Log into the uniFLOW Admin Console</span>
+
+<span class="s0">1. </span><span class="s2">Go to</span><span class="s1">: </span><span class="s2">`https</span><span class="s1">:</span><span class="s2">//</span><span class="s1">&lt;</span><span class="s2">uniflow-server</span><span class="s1">&gt;</span><span class="s2">/uniflow`</span>
+<span class="s0">2. </span><span class="s2">Log in with a user account that has rights to manage devices and queues.</span>
+
+<span class="s0">---</span>
+
+<span class="s0">## </span><span class="s2">Step 4</span><span class="s1">: </span><span class="s2">Configure the Shared Queue for Delegated Release</span>
+
+<span class="s0">1. </span><span class="s2">Navigate to `Queue Management` or `Devices </span><span class="s1">&gt; </span><span class="s2">Queues`.</span>
+<span class="s0">2. </span><span class="s2">Select the `shr-machine-mfg` queue.</span>
+<span class="s0">3. </span><span class="s2">Go to `Access Rights` or `Authorised Users`.</span>
+<span class="s0">4. </span><span class="s2">Add the AD group `uniFLOW-MachineShop-Delegates`.</span>
+<span class="s0">5. </span><span class="s2">Set appropriate rights</span><span class="s1">:</span>
+    <span class="s0">- </span><span class="s2">Can release print jobs submitted by `shr-machine-mfg`</span>
+    <span class="s0">- </span><span class="s2">Cannot delete jobs from other users</span>
+<span class="s0">6. </span><span class="s2">Save and apply changes.</span>
+
+<span class="s0">---</span>
+
+<span class="s0">## </span><span class="s2">Step 5</span><span class="s1">: </span><span class="s2">Test Delegated Access via Access Cards</span>
+
+<span class="s0">1. </span><span class="s2">Submit a print job from the shared PC </span><span class="s1">(</span><span class="s2">logged in as `shr-machine-mfg`</span><span class="s1">)</span><span class="s2">.</span>
+<span class="s0">2. </span><span class="s2">Walk to the Canon device.</span>
+<span class="s0">3. </span><span class="s2">Tap the building access card.</span>
+<span class="s0">4. </span><span class="s2">Confirm the print job is visible and can be released.</span>
+<span class="s0">5. </span><span class="s2">Confirm other users’ jobs are not visible </span><span class="s1">(</span><span class="s2">unless configured otherwise</span><span class="s1">)</span><span class="s2">.</span>
+
+<span class="s0">---</span>
+
+<span class="s0">## </span><span class="s2">Optional Enhancements</span>
+
+<span class="s0">- </span><span class="s2">Enable PIN fallback if card is unavailable.</span>
+<span class="s0">- </span><span class="s2">Set uniFLOW to default to </span><span class="s1">&quot;</span><span class="s2">Secure Print</span><span class="s1">&quot; </span><span class="s2">queues only.</span>
+<span class="s0">- </span><span class="s2">Use reporting to monitor which users are releasing from shared queues.</span>
+
+<span class="s0">---</span>
+
+<span class="s0">## </span><span class="s2">Reversion Plan</span>
+
+<span class="s2">If delegation or card release fails</span><span class="s1">:</span>
+
+<span class="s0">1. </span><span class="s2">Revert to using personal user logins temporarily.</span>
+<span class="s0">2. </span><span class="s2">Check AD group membership and sync status.</span>
+<span class="s0">3. </span><span class="s2">Recheck that user cards are registered to correct AD accounts in uniFLOW.</span>
+<span class="s0">4. </span><span class="s2">Use uniFLOW logs to trace login or print job mismatches.</span>
+
+<span class="s0">---</span>
+
+<span class="s0">## </span><span class="s2">Summary</span>
+
+<span class="s2">This implementation allows staff in the Machine Shop to release print jobs submitted from a shared account using their personal access cards. </span>
+<span class="s2">It ensures secure, auditable release without relying on shared passwords or multiple login sessions. The use of an AD group </span><span class="s1">(</span><span class="s2">`uniFLOW-MachineShop-Delegates`</span><span class="s1">) </span>
+<span class="s2">provides scalable, maintainable access control in line with enterprise security best practices.</span></pre>
+</body>
+</html>

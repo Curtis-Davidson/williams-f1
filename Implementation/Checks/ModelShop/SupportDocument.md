@@ -3,32 +3,32 @@
 **Location:** Modelshop Department, WF1 Campus  
 **Date:** 01/08/2025  
 **Prepared by:** Paul Davidson  
-**Account ID:** `shr-modelshop`  
+**Account ID:** **`shr-modelshop`**  
 **Status:** Implemented and Active
 
 ---
 
 ## 1. Purpose of Change
 
-Transition Modelshop from using a legacy `modelshop` generic account to a secured, access-controlled shared account (`shr-modelshop`).  
+Transition Modelshop from using a legacy `modelshop` generic account to a secured, access-controlled shared account (**`shr-modelshop`**).  
 This change supports operational collaboration while aligning with current IT security policies and auditability requirements.
 
 ---
 
 ## 2. Overview of Changes
 
-- Created and implemented `shr-modelshop` as the official shared account for Modelshop collaboration.
+- Created and implemented **`shr-modelshop`** as the official shared account for Modelshop collaboration.
 - Disabled legacy `modelshop` account across all devices post-UAT.
 - Users now log in with:
-    - **Individual accounts** on standard workstation devices (Category 3).
-    - `shr-modelshop` on shared/team-based machines (Category 8).
+    - **Individual accounts** on standard workstation devices.
+    - **`shr-modelshop`** on shared/team-based machines.
 - Keeper MFA vault and shared email/Teams access configured.
 
 ---
 
-## 3. Devices Using `shr-modelshop` (Category 8)
+## 3. Devices Using **`shr-modelshop`**
 
-The following machines are now restricted to the `shr-modelshop` account:
+The following machines are now restricted to the **`shr-modelshop`** account:
 
 - **M1262**, **W9014**, **M9504**, **W9478**, **M9062**, **W9435**, **W9058**
 - **M3123**, **L10556**, **L12048**, **creaform**, **L2464**
@@ -42,18 +42,30 @@ Standard setup for these devices includes:
 
 ---
 
-## 4. Scanning Laptops (Modelshop & TunnelOps)
+## 4. Exception – Creaform Scanning Laptops (Modelshop & TunnelOps)
 
 The following devices are used for **Creaform scanning and dimensional analysis**. These are mobile and shared between **Modelshop** and **TunnelOps**:
 
-- **creaform** (confirmed dedicated scanning machine)
+- **creaform** (dedicated scanning machine)
 - **L10556**, **L12048**, **L2464** (laptops used for scanning workflows)
 
+### Usage
 These devices:
-- Run **Creaform VX**, **PolyWorks**, and other scan-aligned applications
-- Require uninterrupted network access and OneDrive sync
-- Should not have login scope restricted beyond current GPO settings
-- Must remain operational for portable scanning activities and cross-departmental use
+- Run **Creaform VX**, **PolyWorks**, and other scan-aligned applications.
+- Must remain operational for portable scanning activities and cross-departmental use.
+
+### USB Exclusion for Licensing
+These scanning laptops must retain **USB storage access** because the Creaform licensing system requires a USB device to be detected to validate and run the software.  
+Any USB blocking policies must explicitly exclude these devices.
+
+### Requirement
+These laptops must remain **exempt from USB lockdown enforcement** via policy to support necessary USB peripherals.
+
+### Reason
+- **Licensing dependency:** The *Creaform VX* software relies on physical USB access for a hardware dongle to validate its license.
+- **Hardware connectivity:** The scanning workflow requires a **USB-to-Ethernet network adapter** (USB-C), 
+    enabling connection to a dedicated hardware controller or scanner. This adapter provides the IP-based link between the laptop and Creaform scanning hardware.
+- **Operational necessity:** Without USB access, the scanner hardware—using that dedicated network link—would be unable to connect correctly, breaking both licensing authentication and scanning operations.
 
 ---
 
@@ -63,13 +75,11 @@ These devices:
 - `grp-modelshopRW` – Read/Write access to network drives
 - `grp-modelshopRO` – Read-only access
 - `grp-modelshopLAC` – Login access control for shared devices
-- `grp-modelshopRDC` – Remote desktop access for designated users
+- `grp-modelshopRDC` – Remote desktop access for designated users when required
 
 **Login Configuration:**
-- Only users in `grp-modelshopLAC` may log into Category 8 devices using `shr-modelshop`.
-- RDC allowed only for:
-    - **Mark Peers**
-    - **Julian Davies**
+- **Note:** The `grp-modelshopLAC` AD group exists for login access control to shared devices; however, for this account (`shr-modelshop`), 
+- the applied method was **direct logon restrictions at the user object level** (Logon tab) where permitted machine names were explicitly listed.
 
 ---
 
@@ -77,11 +87,10 @@ These devices:
 
 **Account Name:** `shr-modelshop`  
 **Password Policy:** 12-month rotation, stored in Keeper  
-**OU Path:** `OU=Shared,OU=WilliamsF1,DC=williams,DC=f1`
+**OU Path:** `OU=!Shared Accounts,OU=Factory,OU=Factory.WF1,DC=williams,DC=f1`
 
 **Email Setup:**
-- Shared mailbox: `modelshop@williamsf1.com`
-- Accessible alongside personal mailbox for assigned users
+- Standard Exchange mailbox: `shr-modelshop@williamsf1.com`
 
 **MS Teams:**
 - Full Teams functionality enabled for `shr-modelshop`
@@ -110,11 +119,11 @@ These devices:
 
 ## 8. Keeper Access & Account Custodians
 
-The password and MFA credentials for the `shr-modelshop` shared account are stored securely in **Keeper**, and are managed in line with the IT Support team's secure vault policies.
+The password and MFA credentials for the **`shr-modelshop`** shared account are stored securely in **Keeper**, and are managed in line with the IT Support team's secure vault policies.
 
 Access to the Keeper vault entry is delegated to the following contacts:
 
-- **Mark Peers** – Modelshop Process Manager
+- **Mark Peers** – Modelshop Manager
 - **Paul Fishwick** – Shift Supervisor
 - **Mark Crane** – Shift Supervisor
 - **Julian Davies** – Senior Operator (Modelshop Scanning Lead)
@@ -123,14 +132,12 @@ These four individuals are responsible for managing the shared account login acr
 
 ---
 
-## 9. Device Administrator Cleanup
+## 9. Device Administrator
 
-Accounts removed from local administrators:
-- Legacy account `modelshop`
-- Aero Local Admins group
-- User-specific elevated accounts no longer needed (e.g. `Julian.Davies`, `Mario.Reynolds`, `mloveridge`)
-
-All device-specific removals logged in internal system and executed via GPO/Ansible.
+**Local Administrator Context:**  
+Julian Davies has a dedicated administrator account (`adminjdavies`) provisioned to support cross-departmental collaboration between **TunnelOps** and **Modelshop** for scanning operations and wind tunnel testing.  
+Due to the nature of these activities — particularly **out-of-hours wind tunnel runs** — there are occasions where scanning software or related applications may encounter issues when no IT support is on-site.  
+Local administrator rights ensure Julian can perform immediate troubleshooting and resolution to maintain operational continuity during these critical, time-sensitive processes.
 
 ---
 
@@ -139,6 +146,13 @@ All device-specific removals logged in internal system and executed via GPO/Ansi
 - Files from old `modelshop` OneDrive and folders migrated to `shr-modelshop` OneDrive
 - Team members now save photos directly to M365 storage via configured endpoints
 - Any apps tied to legacy paths were reconfigured under the new account
+
+**Modelshop iPhone – OneDrive Photo Integration:**  
+The Modelshop operates an iPhone that is enrolled in **Intune** and linked directly to the `shr-modelshop` OneDrive account.  
+The device is configured to automatically sync captured photos to the shared OneDrive. 
+This setup is used during testing and model photography, ensuring that all images are immediately available under the `shr-modelshop` OneDrive **Photos** directory.  
+Any authorised machine logged in with `shr-modelshop` will have automatic access to these synced images, 
+enabling seamless viewing and utilisation of captured data across both Modelshop and TunnelOps operations.
 
 **Local File Access Transition:**
 On all devices where `shr-modelshop` has replaced `modelshop`:
@@ -150,29 +164,22 @@ On all devices where `shr-modelshop` has replaced `modelshop`:
 
 ---
 
-## 11. Rollback & Contingency
 
-If rollback required:
-- Temporary reactivation of `modelshop` can be performed under IT supervision
-- Previous drive permissions and app configs retained for limited fallback period
+## 11. Validation Summary
 
+Post-implementation validation was completed jointly by Mark Peers, Julian Davies and Paul Davidson.  
+Each device within scope was reviewed and tested to confirm full operational readiness under the **`shr-modelshop`** configuration.
+
+### Validation activities included:
+- **Application checks:** Verified Teamcenter NX, Microsoft Teams, and Exchange email functionality on all relevant devices.
+- **Licensing confirmation:** Ensured all required applications operated correctly under the new shared account.
+- **Drive access:** Confirmed network and local drive access in line with allocated permissions.
+- **Login restrictions:** Validated that devices only allow **`shr-modelshop`** login, as scoped.
+- **Scanning workflows:** Tested scanning laptops in a live Wind Tunnel environment to confirm hardware, Creaform VX connectivity, and USB/network adapter function.
+- **Camera integration:** Verified that the Modelshop iPhone captured images and successfully synced them to the **`shr-modelshop`** OneDrive Photos directory, with access confirmed from all authorised devices.
+
+All tests passed successfully, and the environment is confirmed as production-ready.
 ---
 
-## 12. Validation Summary
 
-All the following were confirmed:
-- Drive access confirmed ✅
-- Apps and licensing functional under new login ✅
-- Teams and Email operational ✅
-- RDC and login restrictions functioning as scoped ✅
-- Devices successfully tested by end users ✅
 
----
-
-## 13. Next Steps
-
-- Monitor usage of `shr-modelshop` and audit authentication logs
-- Review user feedback after 30 days for potential refinements
-- Finalise UAT sign-off and archive legacy configuration notes
-
----
