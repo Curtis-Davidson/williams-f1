@@ -2,8 +2,8 @@
 
 **Project:** Shared Account Remediation  
 **Location:** F1 Canteen  
-**Date:** [Insert Date]  
-**Prepared by:** Curtis-Davidson  
+**Date:** 14 August 2025  
+**Prepared by:** Paul Davidson  
 **Account ID:** F1-CANTEEN  
 **Status:** Implemented and Active
 
