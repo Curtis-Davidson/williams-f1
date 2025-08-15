@@ -2,7 +2,7 @@
 
 **Project:** Shared Account Remediation  
 **Location:** F1 Canteen  
-**Date:** 14 August 2025  
+**Date:** 14 August 2025
 **Prepared by:** Paul Davidson  
 **Account ID:** F1-CANTEEN  
 **Status:** Implemented and Active
@@ -25,6 +25,7 @@ The `canteen@williamsf1.com` email address has been retained as a **shared mailb
 - Configured the shared mailbox as a **secondary mailbox** for all authorised users.
 - Migrated all existing local Canteen data into a mapped network directory (`F1 Canteen`).
 - Configured a **floating laptop** for Canteen use with all user profiles set up and tested.
+- Fully migrated the **Canteen Manager’s office desktop** in Claire’s office, including data, applications, and mailbox, to her new firstname.lastname account.
 - Requested creation of a **SharePoint / Teams shared workspace** for Canteen data and collaboration.
 - Migrated Claire Smith’s (Canteen Manager) profile, data, and mailbox to her new account.
 
@@ -36,7 +37,7 @@ The `canteen@williamsf1.com` email address has been retained as a **shared mailb
 - **Kieran Kerby**
 - **Rebecca Bradley**
 - **Jazmine Brandao** 
-- **Charlie Nelson**
+- **Charlie Nelson** (Head Chef)
 
 ---
 
@@ -49,6 +50,11 @@ The `canteen@williamsf1.com` email address has been retained as a **shared mailb
 - Added desktop shortcut for direct access to the shared folder.
 - Verified Outlook configuration with primary (personal) and secondary (F1 Canteen) mailboxes.
 - Configured OneDrive per user profile.
+
+**Canteen Manager’s Office Desktop (Claire Smith):**
+- Migrated fully to firstname.lastname account.
+- Data, applications, and mailbox migrated and tested.
+- Desktop and OneDrive configuration completed.
 
 ---
 
@@ -88,5 +94,6 @@ All of the following were confirmed:
     - Data migration validated.
     - Desktop setup confirmed.
     - Applications operational.
+- **Canteen Manager’s office desktop migration** validated, with data and applications confirmed operational.
 - Canteen Manager profile migration successful.
 - Pending actions documented with owners identified.
