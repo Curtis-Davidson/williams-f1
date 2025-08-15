@@ -2,7 +2,7 @@
 
 **Project:** Shared Account Remediation  
 **Location:** F1 Canteen  
-**Date:** 14 August 2025
+**Date:** 14 August 2025  
 **Prepared by:** Paul Davidson  
 **Account ID:** F1-CANTEEN  
 **Status:** Implemented and Active
@@ -26,7 +26,7 @@ The `canteen@williamsf1.com` email address has been retained as a **shared mailb
 - Migrated all existing local Canteen data into a mapped network directory (`F1 Canteen`).
 - Configured a **floating laptop** for Canteen use with all user profiles set up and tested.
 - Fully migrated the **Canteen Manager’s office desktop** in Claire’s office, including data, applications, and mailbox, to her new firstname.lastname account.
-- Requested creation of a **SharePoint / Teams shared workspace** for Canteen data and collaboration.
+- Requested creation of a **SharePoint / Teams shared workspace** for Canteen data and collaboration (Request Ref: WF1SD-27289).
 - Migrated Claire Smith’s (Canteen Manager) profile, data, and mailbox to her new account.
 
 ---
@@ -36,7 +36,7 @@ The `canteen@williamsf1.com` email address has been retained as a **shared mailb
 - **Claire Smith** (Manager)
 - **Kieran Kerby**
 - **Rebecca Bradley**
-- **Jazmine Brandao** 
+- **Jazmine Brandao**
 - **Charlie Nelson** (Head Chef)
 
 ---
@@ -62,13 +62,13 @@ The `canteen@williamsf1.com` email address has been retained as a **shared mailb
 
 - All menus and operational Canteen data previously stored on the laptop have been consolidated into the network-based `F1 Canteen` directory.
 - Desktop shortcuts provided for easy access.
-- Pending migration of this data to the new SharePoint site upon its creation, after which the mapped directory will be decommissioned.
+- Pending migration of this data to the new SharePoint site upon its creation (WF1SD-27289), after which the mapped directory will be decommissioned.
 
 ---
 
 ## 6. Outstanding Actions
 
-1. **SharePoint / Teams Area Creation** – Awaiting IT provisioning of the shared workspace for F1 Canteen.
+1. **SharePoint / Teams Area Creation** – Awaiting IT provisioning of the shared workspace for F1 Canteen (WF1SD-27289).
 2. **Adobe Acrobat Pro Access** – Awaiting return of Duncan Burrow to provide login credentials for Adobe Pro Writer required by Canteen for PDF editing.
 
 ---
