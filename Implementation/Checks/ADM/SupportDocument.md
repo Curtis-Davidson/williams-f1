@@ -1,35 +1,44 @@
 # Support Summary – Shared Account: `shr-neo-mi`
-**Department:** NEO 800  
+**Department:** Additive Digital Manufacturing (ADM) 
 **Shared Account:** `shr-neo-mi`  
 **Cutover Status:** Complete  
-**Last Updated:** 01/08/2025  
+**Last Updated:** 08/08/2025  
 **Engineer:** Paul Davidson
 
 ---
 
 ## 1. Purpose of Shared Account
 
-The `shr-neo-mi` shared account is configured for the **NEO 800 display screen**, which presents **live camera feeds** from 3D printers and **real-time BI metrics dashboards**.
+The **`shr-neo-mi`** shared account is configured for the **NEO 800 display screen**, which presents **live camera feeds** from 3D printers and **real-time BI metrics dashboards**.
 
 Its role is strictly for visual monitoring — no interactive use. The account requires uninterrupted screen access and is considered **read-only** from a support and infrastructure perspective.
 
 ---
 
-## 2. Devices Using `shr-neo-mi`
+## 2. Devices Using **`shr-neo-mi`**
 
-- **W8800** – Display screen workstation located in the NEO 800 viewing zone.
+- **W10103** – Display screen workstation located in the NEO 800 viewing zone.
 
 ---
 
-## 3. Account Setup & Policy
+# 3. Shared Account Configuration
 
-- **Created in Active Directory** as a generic shared account.
+**Account Name:** `shr-neo-mi`  
+**Password Policy:** stored in Keeper  
+**OU Path:** `OU=!Shared Accounts,OU=Factory,OU=Factory.WF1,DC=williams,DC=f1`
+
+---
+
+## 4. Account Setup & Policy
+
+- **Created in Active Directory** as a shared account.
 - Password is set to **not expire** and cannot be changed by the user.
-- Enabled for login on device **W8800 only**, restricted via `grp-neo-miLAC`.
+- Enabled for login on device **W10103 only**, restricted via `shr-neo-mi`.
+- All new shared accounts **must** be added to the Intune group: `intune_all_user_generic_account`
 
 ---
 
-## 4. Intune Lock Screen Exemption
+## 5. Intune Lock Screen Exemption
 
 This account is **exempt** from standard lock screen policies.
 
@@ -41,13 +50,13 @@ This ensures the display remains **active at all times**, avoiding screen dimmin
 
 ---
 
-## 5. Drive Access
+## 6. Drive Access
 
-Drive mappings are not required for this display use case. No access to team shares or user directories is provisioned under `shr-neo-mi`.
+Drive mappings are not required for this display use case. No access to team shares or user directories is provisioned under **`shr-neo-mi`**.
 
 ---
 
-## 6. Keeper Entry & Access Custodians
+## 7. Keeper Entry & Access Custodians
 
 Account credentials and MFA are securely stored in **Keeper**.
 
@@ -61,31 +70,53 @@ These individuals are responsible for credential access and operational continui
 
 ---
 
-## 7. Monitoring & Sentinel Alerts
+## 8. Monitoring & Sentinel Alerts
 
 The account is monitored via Microsoft Defender and Sentinel.
 
 Due to the non-interactive nature of the account:
-
-- **Any keyboard/mouse interaction** outside normal scheduled maintenance hours will raise an alert.
 - Defender AV is active but not user-prompted.
 
 ---
 
-## 8. Rebuild & Recovery
+## 9. Machine Active Tasks
 
-In the event of failure:
-
-- Reimage device **W8800** using standard base image for Display/NEO 800
-- Reapply AD group `grp-neo-miLAC` and Intune exemption
-- Restore the Keeper credentials if credential loss occurs
+### W10103 (Kiosk PC)
+- **Dual Display Configuration:**
+    - **TV1:** D-Link D-ViewCam live stream from Neo800 IP cameras
+    - **TV2:** Excel machine utilisation report
+- **Default Excel Startup File:**  
+  `\\factory.wf1\wf1\department1\adm\1.12 Machine Utilisation\ADM Machine Utilisation Tracker.xlsx`
 
 ---
 
 ## 9. Notes
 
 - The account auto-launches the **SharePoint BI dashboard** (published as an application) and the **D-Link camera monitoring software** at login.
-- This is not configured as a kiosk session; the environment retains the default Windows shell but is used passively.
-- Physical access to the machine is via locked enclosure with key access held by Engineering.
+
+---
+## 10. Validation Summary
+
+**Business Owner:** Andrew Cripps – ADM Supervisor
+
+All validation activities have been completed.  
+
+### Validation Activities Included:
+- Logged in as **`firstname.lastname`** and confirmed:
+    - Full access to Titanium Apps.
+    - Email notifications sent to all recipients in `Neo800_notifications@williamsf1.com` upon trigger events.
+    - Ability to write reports to the network share during the print cycle.
+    - Ability to view and open generated report files.
+- Logged in as an **Individual Account ID** and confirmed:
+    - Ability to view and open generated report files.
+
+- Logged in as the **shr-neo-mi** on W10103 and confirmed:
+    - **TV1:** Live video feed from Neo800 IP cameras via D-Link D-ViewCam.
+    - **TV2:** Excel machine utilisation report displayed from the default path:
+      `\\factory.wf1\wf1\department1\adm\1.12 Machine Utilisation\ADM Machine Utilisation Tracker.xlsx`
+- Confirmed account logon restrictions prevent access from unauthorised devices.
+- Confirmed internet access is blocked for `Neo800-01` 
+
+All tests passed successfully, and the environment is confirmed as production-ready.
 
 ---
