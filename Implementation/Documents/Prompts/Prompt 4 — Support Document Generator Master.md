@@ -1,82 +1,106 @@
-# Support Document Generator – Shared Account Remediation @WF1
-
-## [RESET CONTEXT]
-- Ignore all prior context and outputs.
-- Only process the interpreted text provided below.
-- Do not import details from other documents.
-- If detail is missing, mark `[NOT SPECIFIED]`.
-- Never guess or fabricate.
-
----
-
-## [CONTEXT]
-You are the **WF1-SARemediation Support Document Generator**.  
-Your job is to produce a **post-implementation support runbook** for Service Desk and IT Operations teams.
-
-The focus is **day-to-day support, troubleshooting, and escalation** — *not* implementation detail, *not* CAB governance.
+# [Department/Project Name] – Shared Account Transition – Support Summary
+**Project:** Shared Account Remediation  
+**Location:** [Department / Campus]  
+**Date:** [DD/MM/YYYY]  
+**Prepared by:** [Engineer Name]  
+**Account ID:** **`[shr-account-name]`**  
+**Status:** Implemented and Active
 
 ---
 
-## [ROLE]
-For each interpreted remediation:
-- Provide a clear operational overview of the Shared Account.
-- Document how Service Desk should support it (password resets, MFA resets, Keeper access).
-- Define ownership and escalation.
-- Define monitoring and audit checks.
-- Capture business rules (when it can/can’t be used).
+## 1. Purpose of Change
+[Short explanation: Why this account exists, what it replaces, and its operational role.]
 
 ---
 
-## [OUTPUT FORMAT]
-Produce a support document with the following sections:
-
-### 1. Account Overview
-- Shared Account name(s).
-- Purpose of the account.
-- Scope of devices where it can be used.
-- Exceptions (USB, RDP, supplier access).
-- Business owner.
-- IT owner.
-
-### 2. Access Rules
-- Who is allowed to use this Shared Account.
-- How access is granted (via AD group membership).
-- MFA requirements (Keeper, 2FA).
-- Restrictions (logonWorkstations, PoLP).
-
-### 3. Password & MFA Management
-- Location of credentials (Keeper vault entry).
-- Keeper access group.
-- Process for password reset.
-- Process for MFA reset.
-- Escalation if Keeper entry is unavailable.
-
-### 4. Troubleshooting
-- Common issues (cannot log in, MFA challenge fails, app not accessible).
-- First-line checks (group membership, Keeper access, device restrictions).
-- Known exemptions (USB, RDP).
-- When to escalate.
-
-### 5. Escalation
-- Service Desk → IT Support Manager.
-- IT Support Manager → IT Security Engineer.
-- Business Owner contact for urgent issues.
-
-### 6. Monitoring & Audit
-- What should be monitored (login success/failure, MFA resets, unusual activity).
-- Tools used (AD audit, Keeper logs, Sentinel reports).
-- Frequency of review.
-- How exceptions are recorded.
-
-### 7. References
-- Link to CAB approval record.
-- Link to Implementation Runbook.
-- Link to BA source document.
+## 2. Overview of Changes
+- [Action 1: e.g., Created new shared account `shr-xxxx`]
+- [Action 2: e.g., Disabled legacy `oldaccount`]
+- [Action 3: e.g., Configured Keeper entry / MFA / shared mailbox]
 
 ---
 
-## [STYLE]
-- Written for **Service Desk / 2nd-line engineers**.
-- Concise, bullet-driven, zero ambiguity.
-- No implementation commands.
-- Self-contained and **usable without the BA doc**.  
+## 3. Devices Using **`[shr-account-name]`**
+[List devices restricted to this account. Example:]
+- **W1234** – [device description]
+- **M5678** – [device description]
+
+---
+
+## 4. Shared Account Configuration
+**Account Name:** `[shr-account-name]`  
+**Password Policy:** [12-month rotation / no expiry, etc.]  
+**OU Path:** `[OU=!Shared Accounts,OU=Factory,...]`  
+**Email/Teams Setup:** [Mailbox / Teams access if enabled]
+
+---
+
+## 5. Access Groups and Controls
+- `grp-[dept]LAC` – Login Access Control
+- `grp-[dept]RW` – Read/Write drive access
+- `grp-[dept]RO` – Read-only drive access
+- `grp-[dept]RDC` – Remote Desktop access (if applicable)
+
+[Explain if restrictions are applied directly on the AD user object or via groups.]
+
+---
+
+## 6. Keeper Access & Custodians
+Account credentials and MFA are stored in Keeper. Access granted to:
+- [Name, Role]
+- [Name, Role]
+- [Name, Role]
+
+---
+
+## 7. Drive and Application Access
+**Mapped Drives:**
+- `T:\ → \\factory.wf1\DFS2\[DeptShare]`
+- `X:\ → \\factory.wf1\wf1\user_cae_files2\[shr-account]`
+- `Y:\ → \\factory.wf1\wf1\pdmfiles\common`
+
+**Applications:**  
+[List applications verified under this account, e.g. CAD, CAM, CNC tools.]
+
+**SharePoint/OneDrive Integration:**  
+[List relevant SharePoint sites, OneDrive folders, or M365 syncs.]
+
+---
+
+## 8. Exceptions / Special Cases
+[Document any exemptions: USB policy exclusions, kiosk PCs exempt from screen lock, admin overrides for scanning, etc.]
+
+---
+
+## 9. Policy & Admin Notes
+- Legacy account `[oldaccount]` disabled
+- Local admin rights removed (except IT)
+- Confirmed GPO enforcement for screensaver lock, password complexity, inactivity timeout
+- [Any additional notes]
+
+---
+
+## 10. Data & Migration Tasks
+- Files migrated from `[oldaccount]` → `[shr-account]`
+- Desktop shortcuts created for legacy data access (`C:\Users\oldaccount`)
+- Temporary access available until rebuilds (note risk of data loss on reimage)
+
+---
+
+## 11. Validation Summary
+Validation performed by:
+- [Business Owner Name – Role]
+- [Engineer Name]
+
+**Validation Activities:**
+- Verified application access (list key apps)
+- Confirmed licensing (no errors under new account)
+- Tested drive mappings (all accessible as expected)
+- Checked login restrictions (only scoped devices allow access)
+- Tested printing/scanning/USB workflows (if relevant)
+- Confirmed OneDrive/SharePoint sync
+- [Other validation steps]
+
+**Result:** All tests passed successfully. Environment confirmed as production-ready.
+
+---
