@@ -14,9 +14,9 @@
 ---
 
 ## 2. Overview of Changes
-- [Action 1: e.g., Created new shared account `shr-xxxx`]
-- [Action 2: e.g., Disabled legacy `oldaccount`]
-- [Action 3: e.g., Configured Keeper entry / MFA / shared mailbox]
+- [Action 1: eg, Created new shared account `shr-xxxx`]
+- [Action 2: eg, Disabled legacy `oldaccount`]
+- [Action 3: eg, Configured Keeper entry / MFA / shared mailbox]
 
 ---
 
