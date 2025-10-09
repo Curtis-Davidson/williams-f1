@@ -59,11 +59,7 @@ Produce a CAB submission with these sections:
 - Post-change test plan (apps, MFA, Keeper, devices).
 - Success criteria.
 
-### 7. Approvals
-- Stakeholders required for sign-off.
-- Business owner.
-- IT Security approver.
-- CAB approver.
+
 
 ---
 

@@ -2,9 +2,9 @@ from pathlib import Path
 
 # Markdown content from the previous message
 markdown_content = """
-# ✅ Shared Account Remediation Plan: `shr-kitcutting`
+#  Shared Account Remediation Plan: `shr-kitcutting`
 
-## 📍Purpose
+## Purpose
 Remediate the generic `cleanroom` account usage by introducing **individual login** for most devices, while preserving generic access on exempt devices. Create proper AD structure, file repositories, and app access for the **Kitcutting Team**.
 
 ---

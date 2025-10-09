@@ -1,5 +1,5 @@
 # Department Sign-Off – Shared Account Migration
-**Account:** Model Shop (`shr-modelshop`)
+**Account:** Main Gate Security (`security`)
 
 ---
 

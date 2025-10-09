@@ -46,8 +46,9 @@ The `canteen@williamsf1.com` email address has been retained as a **shared mailb
 **Floating Canteen Laptop:**
 
 - Configured with all authorised user profiles.
-- Mapped `F1 Canteen` network directory for menu templates, documents, and shared operational data.
-- Added desktop shortcut for direct access to the shared folder.
+- F1 Canteen: Access is now via dedicated SharePoint site (replacing old local share):
+  https://williamsf1.sharepoint.com/sites/F1Canteen.
+- Added F1 Canteen SharePoint application pinned on desktop and taskbar.
 - Verified Outlook configuration with primary (personal) and secondary (F1 Canteen) mailboxes.
 - Configured OneDrive per user profile.
 
@@ -60,16 +61,17 @@ The `canteen@williamsf1.com` email address has been retained as a **shared mailb
 
 ## 5. Data Migration
 
-- All menus and operational Canteen data previously stored on the laptop have been consolidated into the network-based `F1 Canteen` directory.
-- Desktop shortcuts provided for easy access.
-- Pending migration of this data to the new SharePoint site upon its creation (WF1SD-27289), after which the mapped directory will be decommissioned.
-
+- All menus and operational Canteen data previously stored on the laptop have been consolidated into the new F1 Canteen SharePoint site  `https://williamsf1.sharepoint.com/sites/F1Canteen`.
+- Desktop shortcuts provided for easy access to each named user.
+- Completed Pending migration of this data to the new SharePoint site upon its creation (WF1SD-27289), the mapped directory has been decommissioned.
+- **SharePoint / Teams Area Creation** – Completed. All F1 Canteen data has been migrated (WF1SD-27289).
+- **F1 Canteen: Now via dedicated SharePoint site (replacing old local share):**
+  https://williamsf1.sharepoint.com/sites/F1Canteen
 ---
 
 ## 6. Outstanding Actions
 
-1. **SharePoint / Teams Area Creation** – Awaiting IT provisioning of the shared workspace for F1 Canteen (WF1SD-27289).
-2. **Adobe Acrobat Pro Access** – Awaiting return of Duncan Burrow to provide login credentials for Adobe Pro Writer required by Canteen for PDF editing.
+- **Adobe Acrobat Pro Access** – Awaiting return of Duncan Burrow to provide login credentials for Adobe Pro Writer required by Canteen for PDF editing.
 
 ---
 
