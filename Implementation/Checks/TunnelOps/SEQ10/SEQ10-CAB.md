@@ -8,8 +8,8 @@ Purpose: Replace legacy "TunnelOps" generic logins on three General WT Systems w
 - W9316 — Wall-mounted touchscreen in WT2 Control Room; general admin/presentation use.
 
 ## Accounts
-- `shr-tunops-gen01` (standard)
-- `shr-tunops-gen01Adm` (admin)
+- `shr-tunops-wte` (standard)
+- `shr-tunops-wteAdm` (admin)
 - Final naming to be confirmed with department (trailing descriptors if they want them).
 
 ## Software / Dependencies (by area)
@@ -35,9 +35,9 @@ Purpose: Replace legacy "TunnelOps" generic logins on three General WT Systems w
 Blocked by default; allowlist (if needed): `https://dev.azure.com/F1Technical/`, `https://miro.com/` (confirm with SecOps/TIG before enforcing).
 
 ## Key Actions
-- Create `shr-tunops-gen01` and `shr-tunops-gen01Adm`.
+- Create `shr-tunops-wte` and `shr-tunops-gen01Adm`.
 - Restrict both via Log On To to `W9419`, `WT-Healthmon`, `W9316`.
-- Add `shr-tunops-gen01Adm` (or an admin group containing it) to local Administrators on the three devices.
+- Add `shr-tunops-wteAdm` (or an admin group containing it) to local Administrators on the three devices.
 - Map drives/paths, validate apps, confirm SharePoint access, and run UAT on shift.
 - Keep `TunnelOps` generic available for rollback until sign-off.
 
@@ -46,13 +46,13 @@ Blocked by default; allowlist (if needed): `https://dev.azure.com/F1Technical/`,
 # WORKING DOCUMENT — SEQ10
 
 ## Scope
-Remediate the "GEN" subset of TunnelOps machines (`W9419`, `WT-Healthmon`, `W9316`) by introducing two shared accounts with minimal blast radius, enforcing machine-scoped logon, and preparing optional RDP access using the standard RDP group pattern. No kiosk mode. No complex BA group lattice.
+Remediate the "WTE" subset of TunnelOps machines (`W9419`, `WT-Healthmon`, `W9316`) by introducing two shared accounts with minimal blast radius, enforcing machine-scoped logon, and preparing optional RDP access using the standard RDP group pattern. No kiosk mode. No complex BA group lattice.
 
 ## Implementation Steps (authoritative)
 
 ### 1. Account Creation & Attributes
-- Create `shr-tunops-gen01` (standard). Description: "TunnelOps GEN — standard shared account for W9419, WT-Healthmon, W9316 (WT2)".
-- Create `shr-tunops-gen01Adm` (admin). Description: "TunnelOps GEN — admin shared account for W9419, WT-Healthmon, W9316 (WT2)".
+- Create `shr-tunops-wte` (standard). Description: "TunnelOps GEN — standard shared account for W9419, WT-Healthmon, W9316 (WT2)".
+- Create `shr-tunops-wteAdm` (admin). Description: "TunnelOps GEN — admin shared account for W9419, WT-Healthmon, W9316 (WT2)".
 - Password policy: long, vaulted; annual rotation per policy; store in Keeper/1Password; department informed on change via secure channel.
 - Note fields in AD: business owner (WT Systems), purpose, vault reference, rotation note.
 
@@ -125,7 +125,7 @@ Replaces broad generic login with scoped shared accounts, ensuring accountabilit
 
 ## Affected Systems
 - Machines: `W9419`, `WT-Healthmon`, `W9316`
-- Accounts: `shr-tunops-gen01`, `shr-tunops-gen01Adm`
+- Accounts: `shr-tunops-wte`, `shr-tunops-wteAdm`
 - Applications: WTTP, Healthmonitor, Teams, Excel, Test Slate, Matlab, Edge web apps
 
 ## Risks & Mitigations
@@ -141,7 +141,7 @@ Refer to Working Document sections for Implementation Steps, Validation, and Rol
 
 ## Stakeholders
 - Owner: WT Systems (Mich Hackwood) / WT Engineers (Keith Forsythe)
-- Implementer: Curtis-Davidson (Shared Account Remediation)
+- Implementer: Paul Davidson (Shared Account Remediation)
 - Support: TIG (IT Support)
 
 ---
@@ -187,7 +187,7 @@ Three WT2 devices use scoped shared accounts to replace the old TunnelOps generi
 ## Restrict Logon to Machines
 ```powershell
 Import-Module ActiveDirectory
-Set-ADUser -Identity "shr-tunops-gen01" -LogonWorkstations "W9419,WT-Healthmon,W9316"
-Set-ADUser -Identity "shr-tunops-gen01Adm" -LogonWorkstations "W9419,WT-Healthmon,W9316"
-(Get-ADUser "shr-tunops-gen01" -Properties LogonWorkstations).LogonWorkstations
-(Get-ADUser "shr-tunops-gen01Adm" -Properties LogonWorkstations).LogonWorkstations
+Set-ADUser -Identity "shr-tunops-wte" -LogonWorkstations "W9419,WT-Healthmon,W9316"
+Set-ADUser -Identity "shr-tunops-wteAdm" -LogonWorkstations "W9419,WT-Healthmon,W9316"
+(Get-ADUser "shr-tunops-wte" -Properties LogonWorkstations).LogonWorkstations
+(Get-ADUser "shr-tunops-wteAdm" -Properties LogonWorkstations).LogonWorkstations
