@@ -1,37 +1,27 @@
 <#
 WF1 – User Effective Rights & Membership Audit (Self-contained)
-- Creates Results subfolder per run
-- Verifies elevation
-- Verifies RSAT modules exist (ActiveDirectory, GroupPolicy)
-- Prompts for a target user (sam / domain\sam / UPN / DN)
-- Exports JSON, CSV, HTML (+ RSoP HTML/XML when possible)
+Purpose: Prompt for a user and produce JSON/CSV/HTML + RSoP artefacts summarising identity, groups (direct+nested),
+         applied USER GPOs, User Rights assignments that affect the user, GPP drives/printers, and OU-chain delegations.
+Safety: Read-only. No changes to AD or local system. Requires RSAT (ActiveDirectory + GroupPolicy).
 #>
 
 $ErrorActionPreference = 'Stop'
 
-# --- Elevation check ---
+# --- Elevation check (we need gpresult and AD tooling happily) ---
 $IsAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
 ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
-if (-not $IsAdmin) { throw "Run as Administrator. (Tip: always start via bootstrap-wf1-user-audit.ps1)" }
+if (-not $IsAdmin) { throw "Run PowerShell as Administrator." }
 
 # --- Paths / Run folder ---
-$Base    = 'C:\WF1UserAudit'
-New-Item -ItemType Directory -Path $Base -Force | Out-Null
-$Stamp   = Get-Date -Format 'yyyyMMdd_HHmmss'
-$RunDir  = Join-Path $Base "Results\$Stamp"
-New-Item -ItemType Directory -Path $RunDir -Force | Out-Null
+$Base   = 'C:\WF1UserAudit'
+$Stamp  = Get-Date -Format 'yyyyMMdd_HHmmss'
+$RunDir = Join-Path $Base ("Results\" + $Stamp)
+New-Item -ItemType Directory -Path $Base,$RunDir -Force | Out-Null
 Start-Transcript -Path (Join-Path $RunDir "audit_$Stamp.log") -NoClobber | Out-Null
 
-function Require-Module($name) {
-    if (-not (Get-Module -ListAvailable -Name $name)) {
-        throw "Required module '$name' not found. Install RSAT (ActiveDirectory + GroupPolicy) and re-run."
-    }
-}
-
-Require-Module ActiveDirectory
-Require-Module GroupPolicy
-Import-Module ActiveDirectory
-Import-Module GroupPolicy
+# --- Required modules (fail fast) ---
+Import-Module ActiveDirectory -ErrorAction Stop
+Import-Module GroupPolicy     -ErrorAction Stop
 
 # --- Output files ---
 $jsonOut = Join-Path $RunDir "wf1_user_audit_$Stamp.json"
@@ -42,10 +32,10 @@ $rsoHtml = Join-Path $RunDir "gpresult_user_$Stamp.html"
 
 # --- Prompt for target user ---
 Write-Host ""
-$userInput = Read-Host "Enter user (samAccountName or domain\sam or UPN or DN)"
+$userInput = Read-Host "Enter user (samAccountName or DOMAIN\sam or UPN or DN)"
 if ([string]::IsNullOrWhiteSpace($userInput)) { throw "No user provided." }
 
-# --- Resolve user object ---
+# --- Resolve user object robustly ---
 try {
     if ($userInput -match '\\') {
         $sam  = $userInput.Split('\')[-1]
@@ -61,10 +51,7 @@ try {
     Stop-Transcript | Out-Null
     throw "Could not resolve user '$userInput' in AD. $_"
 }
-if (-not $User) {
-    Stop-Transcript | Out-Null
-    throw "User '$userInput' not found."
-}
+if (-not $User) { Stop-Transcript | Out-Null; throw "User '$userInput' not found." }
 
 # --- Helpers ---
 function Get-OUPath([string]$dn) {
@@ -102,16 +89,12 @@ $identity  = [pscustomobject]@{
 
 # --- Groups (direct + token SIDs → names) ---
 $directGroups = @()
-try {
-    $directGroups = (Get-ADPrincipalGroupMembership -Identity $User.DistinguishedName | Sort-Object Name).Name
-} catch {}
+try { $directGroups = (Get-ADPrincipalGroupMembership -Identity $User.DistinguishedName | Sort-Object Name).Name } catch {}
 
 $tokenSIDs = @()
 try {
     $tokenBytes = (Get-ADUser $User -Properties tokenGroups).tokenGroups
-    if ($tokenBytes) {
-        $tokenSIDs = $tokenBytes | ForEach-Object { (New-Object System.Security.Principal.SecurityIdentifier($_,0)).Value }
-    }
+    if ($tokenBytes) { $tokenSIDs = $tokenBytes | ForEach-Object { (New-Object System.Security.Principal.SecurityIdentifier($_,0)).Value } }
 } catch {}
 
 $allGroups = @()
@@ -125,7 +108,7 @@ if ($tokenSIDs) {
 }
 $allGroups = ($allGroups + $directGroups) | Sort-Object -Unique
 
-# --- gpresult (RSoP) user scope ---
+# --- gpresult (RSoP) USER scope ---
 $fullyQualifiedUser = if ($User.UserPrincipalName) { $User.UserPrincipalName } else { "$domain\$($User.SamAccountName)" }
 & gpresult /USER $fullyQualifiedUser /SCOPE USER /H $rsoHtml 2>$null
 
@@ -261,7 +244,7 @@ RsopXml     = (if ($xmlOk) { $rsoXml } else { $null })
 }
 }
 
-# CSV (flattened)
+# CSV (flattened for Excel)
 $csvRows = @()
 $csvRows += [pscustomobject]@{ Section='Identity'; Key='SamAccountName'; Value=$identity.SamAccountName }
 $csvRows += [pscustomobject]@{ Section='Identity'; Key='DisplayName';   Value=$identity.DisplayName }
@@ -269,10 +252,10 @@ $csvRows += [pscustomobject]@{ Section='Identity'; Key='UPN';           Value=$i
 $csvRows += [pscustomobject]@{ Section='Identity'; Key='OUPath';        Value=$identity.OUPath }
 $csvRows += [pscustomobject]@{ Section='Identity'; Key='Enabled';       Value=$identity.Enabled }
 $csvRows += [pscustomobject]@{ Section='Identity'; Key='LastLogonDate'; Value=$identity.LastLogonDate }
-$csvRows += ($allGroups   | ForEach-Object { [pscustomobject]@{ Section='Group';    Key='Group'; Value=$_ } })
-$csvRows += ($rightsHits  | ForEach-Object { [pscustomobject]@{ Section='UserRight';Key=$_.Right; Value="GPO=$($_.GPODisplayName); By=$($_.GrantedBy)" } })
-$csvRows += ($appliedUserGpos | ForEach-Object { [pscustomobject]@{ Section='AppliedGPO'; Key=$_.Name; Value="Link=$($_.Link); Enforced=$_.Enforced; Enabled=$_.Enabled; WMI=$($_.WMIFilter)" } })
-$csvRows += ($delegations | ForEach-Object { [pscustomobject]@{ Section='Delegation'; Key=$_.OU; Value="$($_.IdentityReference): $($_.ActiveDirectoryRights)" } })
+$csvRows += ($allGroups   | ForEach-Object { [pscustomobject]@{ Section='Group';     Key='Group'; Value=$_ } })
+$csvRows += ($rightsHits  | ForEach-Object { [pscustomobject]@{ Section='UserRight'; Key=$_.Right; Value=("GPO=" + $_.GPODisplayName + "; By=" + $_.GrantedBy) } })
+$csvRows += ($appliedUserGpos | ForEach-Object { [pscustomobject]@{ Section='AppliedGPO'; Key=$_.Name; Value=("Link=" + $_.Link + "; Enforced=" + $_.Enforced + "; Enabled=" + $_.Enabled + "; WMI=" + $_.WMIFilter) } })
+$csvRows += ($delegations | ForEach-Object { [pscustomobject]@{ Section='Delegation'; Key=$_.OU; Value=($_.IdentityReference + ": " + $_.ActiveDirectoryRights) } })
 
 $result  | ConvertTo-Json -Depth 6 | Set-Content -Path $jsonOut -Encoding UTF8
 $csvRows | Export-Csv -Path $csvOut -NoTypeInformation -Encoding UTF8
