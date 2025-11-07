@@ -1,13 +1,13 @@
 <#
-WF1 – User Effective Rights & Membership Audit (Self-contained)
+WF1 – User Effective Rights & Membership Audit (Self-contained, parse-clean)
 Purpose: Prompt for a user and produce JSON/CSV/HTML + RSoP artefacts summarising identity, groups (direct+nested),
          applied USER GPOs, User Rights assignments that affect the user, GPP drives/printers, and OU-chain delegations.
-Safety: Read-only. No changes to AD or local system. Requires RSAT (ActiveDirectory + GroupPolicy).
+Safety:  Read-only. No changes to AD or local system. Requires RSAT (ActiveDirectory + GroupPolicy).
 #>
 
 $ErrorActionPreference = 'Stop'
 
-# --- Elevation check (we need gpresult and AD tooling happily) ---
+# --- Elevation check (gpresult + AD tooling) ---
 $IsAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()
 ).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
 if (-not $IsAdmin) { throw "Run PowerShell as Administrator." }
@@ -64,12 +64,11 @@ function Get-AncestorOUs([string]$dn) {
         $tail = ($parts[$i..($parts.Length-1)] -join ',')
         if ($tail -like 'OU=*') { $list += $tail }
     }
-    $list
+    return $list
 }
 
 # --- Identity block ---
-$domainObj = [System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()
-$domain    = $domainObj.Name
+$domain    = ([System.DirectoryServices.ActiveDirectory.Domain]::GetCurrentDomain()).Name
 $identity  = [pscustomobject]@{
     SamAccountName    = $User.SamAccountName
     UserPrincipalName = $User.UserPrincipalName
@@ -110,8 +109,9 @@ $allGroups = ($allGroups + $directGroups) | Sort-Object -Unique
 
 # --- gpresult (RSoP) USER scope ---
 $fullyQualifiedUser = if ($User.UserPrincipalName) { $User.UserPrincipalName } else { "$domain\$($User.SamAccountName)" }
+# HTML is almost always available
 & gpresult /USER $fullyQualifiedUser /SCOPE USER /H $rsoHtml 2>$null
-
+# XML is not always available; try and fall back gracefully
 $xmlOk = $false
 try {
     & gpresult /USER $fullyQualifiedUser /SCOPE USER /X $rsoXml 2>$null
@@ -147,8 +147,8 @@ foreach ($g in $appliedUserGpos) {
             $members = @()
             foreach ($m in $r.Members.Member) { $members += [pscustomobject]@{ Name=$m.Name; SID=$m.SID } }
             if ($members.Count -gt 0) {
-                $hit = $members.Where({ $_.SID -and ($tokenSIDs -contains $_.SID) }, 'First').Count -gt 0
-                if ($hit) {
+                $match = $members | Where-Object { $_.SID -and ($tokenSIDs -contains $_.SID) } | Select-Object -First 1
+                if ($match) {
                     $grant = $members | Where-Object { $_.SID -and ($tokenSIDs -contains $_.SID) } | Select-Object -ExpandProperty Name -Unique
                     $rightsHits += [pscustomobject]@{
                         GPODisplayName = $g.Name
@@ -183,7 +183,7 @@ function Get-GPO-GPP-Summary {
             }
         }
     } catch {}
-    $out
+    return $out
 }
 $gppItems = @()
 foreach ($g in $appliedUserGpos) {
@@ -201,9 +201,9 @@ foreach ($ou in $ouChain) {
             $idStr = $ace.IdentityReference.ToString()
             $match = $false
             try {
-                $sidObj = (New-Object System.Security.Principal.NTAccount($idStr)
-                ).Translate([System.Security.Principal.SecurityIdentifier])
-                if ($tokenSIDs -contains $sidObj.Value) { $match = $true }
+                $nt  = New-Object System.Security.Principal.NTAccount($idStr)
+                $sid = $nt.Translate([System.Security.Principal.SecurityIdentifier]).Value
+                if ($tokenSIDs -contains $sid) { $match = $true }
             } catch {
                 if ($allGroups -contains $idStr.Split('\')[-1]) { $match = $true }
             }
