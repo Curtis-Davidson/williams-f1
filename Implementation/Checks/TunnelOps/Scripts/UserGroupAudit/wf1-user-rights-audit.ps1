@@ -223,25 +223,25 @@ foreach ($ou in $ouChain) {
 
 # --- Assemble + Exports ---
 $result = [pscustomobject]@{
-Meta            = [pscustomobject]@{
-GeneratedAt = (Get-Date)
-Tool        = 'WF1 User Rights Audit'
-Host        = $env:COMPUTERNAME
-Domain      = $domain
-RunFolder   = $RunDir
-}
-Identity        = $identity
-DirectGroups    = $directGroups
-AllGroups       = $allGroups
-TokenSIDs       = $tokenSIDs
-AppliedUserGPOs = $appliedUserGpos
-UserRights      = $rightsHits
-GPPItems        = $gppItems
-Delegations     = $delegations
-Artifacts       = [pscustomobject]@{
-RsopHtml    = $rsoHtml
-RsopXml     = (if ($xmlOk) { $rsoXml } else { $null })
-}
+    Meta = [pscustomobject]@{
+        GeneratedAt = (Get-Date)
+        Tool        = 'WF1 User Rights Audit'
+        Host        = $env:COMPUTERNAME
+        Domain      = $domain
+        RunFolder   = $RunDir
+    }
+    Identity        = $identity
+    DirectGroups    = $directGroups
+    AllGroups       = $allGroups
+    TokenSIDs       = $tokenSIDs
+    AppliedUserGPOs = $appliedUserGpos
+    UserRights      = $rightsHits
+    GPPItems        = $gppItems
+    Delegations     = $delegations
+    Artifacts       = [pscustomobject]@{
+        RsopHtml = $rsoHtml
+        RsopXml  = $(if ($xmlOk) { $rsoXml } else { $null })
+    }
 }
 
 # CSV (flattened for Excel)
