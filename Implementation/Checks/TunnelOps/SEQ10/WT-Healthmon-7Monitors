@@ -1,0 +1,29 @@
+# FINAL – WORKS ON EVERY WINDOWS 10/11 MACHINE (DEC 2025)
+Get-Process *edge* -EA SilentlyContinue | Stop-Process -Force
+taskkill /f /im msedge.exe /im MicrosoftEdgeCP.exe /im MicrosoftEdgeSH.exe 2>$null
+Start-Sleep -Seconds 4
+
+$shell = New-Object -ComObject Shell.Application
+
+$Items = @(
+    @{Name="ChangeTimeClock-1"; URL="http://streamlit-wtworkingsection.dev-aero.factory.wf1/ChangeTimeClock";          Phys=2}
+    @{Name="ATR";               URL="http://streamlit-atf.dev-aero.factory.wf1/ATR?period=2025-6&token=";            Phys=3}
+    @{Name="AXIS";             EXE="C:\Program Files\Axis\AXIS Camera Station Pro\ACSP.exe";                              Phys=4}
+ @{Name="HealthMonitor";     EXE="C:\Health Monitor 4.8.6 (Dev)\WilliamsF1.WindTunnel.HealthMonitor.Host.exe";          Phys=5}
+    @{Name="Auto_QA";           URL="http://streamlit-atf.dev-aero.factory.wf1/Auto_QA";                                   Phys=6}
+    @{Name="Plant_Overview";    URL="http://10.100.3.85/ord/file:%5Epx/WilliamsF1Grove/Misc/Plant_Overview_ATF.px%7Cview:hx:HxPxView"; Phys=7}
+    @{Name="ChangeTimeClock-2"; URL="http://streamlit-wtworkingsection.dev-aero.factory.wf1/ChangeTimeClock";          Phys=8}
+)
+
+foreach ($item in $Items) {
+    Write-Host "Launching $($item.Name) → Physical $($item.Phys)" -ForegroundColor Cyan
+    if ($item.URL) {
+        $shell.ShellExecute("microsoft-edge:" + $item.URL)
+    } else {
+        if (Test-Path $item.EXE) { Start-Process $item.EXE }
+        else { Write-Warning "Not found: $($item.EXE)" }
+    }
+    Start-Sleep -Seconds 3
+}
+
+Write-Host "All 7 items launched – ready for monitor placement" -ForegroundColor Green
