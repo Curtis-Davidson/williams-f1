@@ -20,10 +20,12 @@ URL: http://streamlit-wtworkingsection.dev-aero.factory.wf1/ChangeTimeClock
 URL: http://streamlit-atf.dev-aero.factory.wf1/ATR?period=2025-6&token=
 
 4: AXIS Camera Station Pro
+Path: C:\Program Files\Axis Communications\AXIS Camera Station\Client Latest\AcsClient.exe
+
 Connected to server WT-CAMS01, running ATF healthmon view
 
 5: WT Health Monitor application
-Path: C:\Health Monitor 4.8.6 (Dev)\WilliamsF1.WindTunnel.HealthMonitor.Host.exe
+Path: C:\Health Monitor 4.8.6 (Dev)\WilliamsF1.WindTunnel.HealthMonitor.Host.exe\ Targer: 
 
 6: Streamlit – Auto_QA
 URL: http://streamlit-atf.dev-aero.factory.wf1/Auto_QA
