@@ -10,7 +10,7 @@
 
 ------
 
-# **1. Executive Summary (Leadership Overview)**
+# **1. Summary **
 
 Over the last seven weeks, good progress has been made across multiple TunnelOps remediation sequences. Three early sequences (6, 11, and 15) were completed, and have moved to the deeper, more complex operational sequences (10, 12, and now 14).
 
@@ -28,7 +28,7 @@ These sequences were delivered prior to the last three weeks.
 
 ------
 
-# **3. Sequence 10 – Wind Tunnel Engineer Role
+# **3. Sequence 10 – Wind Tunnel Engineer Role **
 
 Sequence 10 represented one of the more complex and critical components of the TunnelOps remediation programme due to the operational sensitivity and compliance requirements of the Wind Tunnel Engineer role.
 
@@ -72,17 +72,19 @@ Multiple back-end permissions and database entries were required.
 - Resolved Wind Tunnel Planner access issues
 - Implemented database user provisioning (coordinated with Duncan Barr)
 
-### **3.5 Multi-Screen (8-Monitor) Environment**
+### **3.5  **Multi-Screen (Distributed 9-Monitor Environment)****
 
-- Eight monitors, all with independent IP-based virtual channels
+- Total of **nine monitors** used across the tunnel workflow
+- **Six monitors** in the Wind Tunnel Control Room
+- **Two monitors** positioned inside the tunnel for live run visibility
+- **One monitor** in the model-makers’ preparation area
+- All monitors operate on independent IP-based virtual channels
 - Mixed refresh rates
-- Historical instability and manual configuration overhead
+- Historical instability and repeated manual layout adjustments
 - Tunnel Workflow Live Data Visuals systems
-- Adjacent **operations-room touchscreen workstation** used for running procedural PowerPoint automations and live tunnel workflow steps
-- Device configured to remain active at all times (no sleep or screen-off) to maintain uninterrupted procedural display
-- Workflow between touchscreen station and procedure whiteboard reviewed to ensure consistency with day-to-day tunnel operations
-
-Work completed:
+- Adjacent **operations-room touchscreen workstation** used for procedural PowerPoint automations and live workflow steps
+- Device configured to remain active (no sleep or display timeout) to keep procedures continuously visible
+- Workflow between touchscreen station and the procedure whiteboard reviewed to confirm alignment with day-to-day tunnel operationsWork completed:
 
 - Wrote a **automated placement script** with error handling to ensure deterministic window placement
 - Resolved refresh-rate mismatches
@@ -198,7 +200,7 @@ The wind tunnel environment is uniquely demanding and requires a measured, highl
 
 - **Positive Momentum**
 
-  Despite the complexity, progress is strong and continuous. The department has been extremely supportive, collaborative, and open. Myself being  integrated has been essential.
+  Despite the complexity, progress is strong and continuous. The department has been extremely supportive, collaborative, and open. Myself being  integrated has been essential part of out collaborative work.
 
 
 
