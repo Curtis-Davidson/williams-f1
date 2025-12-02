@@ -74,10 +74,13 @@ Multiple back-end permissions and database entries were required.
 
 ### **3.5 Multi-Screen (8-Monitor) Environment**
 
-- Eight monitors, all with **independent IP-based virtual channels**
+- Eight monitors, all with independent IP-based virtual channels
 - Mixed refresh rates
-- Historical instability and user dissatisfaction
-- Tunnel Workflow Live Data Visuals Systems.
+- Historical instability and manual configuration overhead
+- Tunnel Workflow Live Data Visuals systems
+- Adjacent **operations-room touchscreen workstation** used for running procedural PowerPoint automations and live tunnel workflow steps
+- Device configured to remain active at all times (no sleep or screen-off) to maintain uninterrupted procedural display
+- Workflow between touchscreen station and procedure whiteboard reviewed to ensure consistency with day-to-day tunnel operations
 
 Work completed:
 
