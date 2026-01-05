@@ -883,7 +883,7 @@ To verify that `shr-tunops-dan` and `shr-tunops-danAdm` operate correctly on all
         - `\\smb.wf1isil01.factory.wf1\department2\ATF\10_Perso`
         - `\\factory.wf1\DFS2\Software\TrackAeroSoftware\MATLAB Toolbox\Data`
     - Test read/write by creating and deleting a small token file.
-5. **Local Path Access**
+5. **[..](../../../..)Local Path Access**
     - Confirm the accounts can read/write to `C:\Licences` and `C:\WilliamsF1` (if present).
 6. **Database Connectivity**
     - Using the relevant app or `sqlcmd`, verify successful connection to
