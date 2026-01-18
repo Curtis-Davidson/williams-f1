@@ -7,7 +7,6 @@
   Replace use of the TunnelOps generic account on WT Central Control System (CCT) devices with controlled shared accounts while maintaining 24/7 operational continuity.
 
 - **Machines:**
-
     - W9336 — WT2 primary CCT control and Test Slate scheduling device
     - W9337 — WT2 preparation and schedule/sequence setup device (RDP access required)
     - W9335 — WT1 primary CCT control device
@@ -16,50 +15,32 @@
     - W9332 — WT5 primary CCT control device
     - W9334 — Backup CCT device (can replace any of the above)
 
-
-
 - **Accounts:**
-
     - shr-tunops-cct — standard shared account for CCT operation
     - shr-tunops-cctAdm — administrative shared account for CCT systems
     - TunnelOps generic account — retained temporarily for rollback and continuity
 
 
-
 - **Software:**
-
     - Test Slate application (schedule and sequence management)
     - Bespoke WT Central Control applications
     - Embedded MS SQL databases (local to CCT systems)
     - OPC messaging interfaces to other WT systems
 
 
-
 - **Key Actions:**
-
     - Create two CCT shared accounts
     - Restrict logon to named CCT machines only
     - Replace TunnelOps usage on these devices
     - Implement RDP access using machine-specific groups where required
     - Validate end-to-end WT operation before withdrawal of TunnelOps usage
 
-
-
 - **Final naming to be confirmed with department.**
-
-
-
 
 
 ------
 
-
-
-
-
 # **WORKING DOCUMENT — SEQ07**
-
-
 
 ## **Scope**
 
@@ -70,13 +51,10 @@
     - Device-level access control and validation
 
 
-
 - **Out of scope:**
 
     - Full decommissioning of TunnelOps generic account
     - Broader TunnelOps systems outside CCT devices
-
-
 
 ## **Implementation Steps (authoritative)**
 
@@ -93,7 +71,6 @@
     - “User must change password at next logon” = No.
 
     - Restrict logon via **User Object → Log On To**:
-
         - W9336
         - W9337
         - W9335
@@ -103,11 +80,7 @@
         - W9334
 
 
-
-
-
 2. **RDP Access** (where applicable)
-
     - Device requiring RDP:
         - W9337
     - Create security group RDP_W9337 in OU **Shared Accounts RDP**.
@@ -115,21 +88,16 @@
     - On W9337, add RDP_W9337 to local **Remote Desktop Users**.
 
 
-
 3. **Local Permissions / Vendor Requirements**
-
     - shr-tunops-cct01Adm to be added to local **Administrators** on all CCT devices.
     - No other business groups to be added at this stage.
 
 
-
 4. **Software / Configuration**
-
     - Verify Test Slate application functionality on all applicable devices.
     - Confirm MS SQL components operate under new shared accounts.
     - Confirm OPC messaging continues to function between systems.
     - Confirm schedule and sequence data can be created, edited, loaded, and executed.
-
 
 
 5. **Intune / Compliance**
@@ -137,9 +105,7 @@
     - Not specified in BA document.
 
 
-
 6. **Validation**
-
     - Logon test using both shared accounts on each device.
     - Test Slate open, schedule creation, sequence execution.
     - Cross-device communication tests (prep → control devices).
@@ -147,21 +113,16 @@
     - Confirm TunnelOps generic account still functions during transition.
 
 
-
 ## **Open Items**
-
 - Confirmation of final account naming suffix with CCT department.
 - Confirmation of which users require ongoing RDP access to W9337.
 - Confirmation of any undocumented vendor utilities or background services.
-
-
 
 ## **Discarded Approaches**
 
 - BA proposed extensive AD group-based login control and access modelling.
 
   → Replaced with project-standard explicit **machine-level “Log On To” restriction** and **machine-specific RDP groups**.
-
 
 
 ## **Rollback**
@@ -173,14 +134,11 @@
 
 ------
 
-
-
 # **CAB DOCUMENT — SEQ07**
 
 ## **Change Summary**
 
 - Implement shared account remediation for WT Central Control Systems within TunnelOps using standard machine-restricted access.
-
 
 
 ## **Business Justification**
@@ -190,13 +148,11 @@
 - Introduce controlled, auditable shared access model.
 
 
-
 ## **Affected Systems**
 
 - **Machines:** W9336, W9337, W9335, W9326, W9340, W9332, W9334
 - **Accounts:** shr-tunops-cct, shr-tunops-cctAdm, TunnelOps (temporary)
 - **Applications:** Test Slate, bespoke CCT applications, OPC interfaces
-
 
 
 ## **Risk & Mitigation (practical)**
@@ -206,11 +162,9 @@
     - **Mitigation:** Retain TunnelOps account until full validation completed.
 
 
-
 - **Risk:** Inter-system communication failure (OPC / database access).
 
     - **Mitigation:** Perform staged testing with business teams before progressing.
-
 
 
 ## **Implementation Plan**
@@ -218,40 +172,27 @@
 - Execute steps defined in **Working Document — Implementation Steps**.
 
 
-
 ## **Validation Plan**
 
 - Execute steps defined in **Working Document — Validation**.
 
-
-
 ## **Backout Plan**
 
 - Execute steps defined in **Working Document — Rollback**.
-
-
 
 ## **Stakeholders**
 
 - Department owner: Wind Tunnel Systems Manager (Mich Hackwood)
 - Implementer: Paul R Davidson (Shared Account Remediation)
 
-
-
 ------
 
-
-
-
-
 # **SUPPORT DOCUMENT — SEQ07**
-
 
 
 ## **Purpose**
 
 - These machines operate and coordinate Wind Tunnel Central Control Systems, including scheduling, sequencing, and live tunnel operation.
-
 
 
 ## **Day-to-Day Use**
@@ -260,13 +201,11 @@
 - Devices operate 24/7 and support live testing activity.
 
 
-
 ## **Access**
 
 - Standard operations: shr-tunops-cct
 - Administrative tasks: shr-tunops-cctAdm
 - RDP access (where required): via RDP_<MACHINE_NAME> group membership.
-
 
 
 ## **Software Notes**
@@ -279,21 +218,18 @@
 ## **Known Paths**
 
 - Network shares:
-
     - \smb.wf1-isil01.factory.wf1\department2 (mapped T:\ATF)
     - \factory.wf1\DFS2 (mapped P:\WTData\WT2)
 
 
 
 - Local paths (device-dependent):
-
     - C:\Data
     - C:\ExhaustCalibrations
     - C:\Templates
     - C:\Template Macros
 
-
-
+    
 ## **Troubleshooting**
 
 - **Cannot log on:**
@@ -311,12 +247,9 @@
 # **CAB DOCUMENT — SEQ07**
 
 
-
 ## **Change Summary**
 
 Implement shared account remediation for TunnelOps WT Central Control System (CCT) devices, replacing day-to-day use of the TunnelOps generic account with controlled shared accounts using standard machine-restricted access.
-
-
 
 ## **Business Justification**
 
@@ -325,11 +258,9 @@ The TunnelOps generic account is currently used across multiple critical WT Cent
 This change introduces controlled shared accounts with explicit machine-level restriction while preserving full operational continuity for Wind Tunnel operations.
 
 
-
 ## **Affected Systems**
 
 - **Machines:**
-
     - W9336 — WT2 primary CCT control device
     - W9337 — WT2 preparation / setup device
     - W9335 — WT1 primary CCT control device
@@ -341,21 +272,16 @@ This change introduces controlled shared accounts with explicit machine-level re
 
 
 - **Accounts:**
-
     - shr-tunops-cct
     - shr-tunops-cctAdm
     - TunnelOps generic account (retained temporarily for rollback)
 
 
-
 - **Applications:**
-
     - Test Slate (schedule and sequence management)
     - Bespoke WT Central Control applications
     - Embedded MS SQL databases
     - OPC messaging interfaces
-
-
 
 ## **Risk & Mitigation (practical)**
 
@@ -384,7 +310,6 @@ This change introduces controlled shared accounts with explicit machine-level re
   Pre-create machine-specific RDP group and validate access before enforcement.
 
 
-
 ## **Implementation Plan**
 
 Execute the steps defined in the **Working Document — SEQ07 Implementation Steps**, including:
@@ -394,7 +319,6 @@ Execute the steps defined in the **Working Document — SEQ07 Implementation Ste
 - Local administrator configuration for admin shared account
 - Machine-specific RDP access where required
 - Application and operational validation
-
 
 
 ## **Validation Plan**
@@ -407,8 +331,6 @@ Execute the validation steps defined in the **Working Document — SEQ07 Validat
 - RDP connectivity tests (where applicable)
 - Confirmation that TunnelOps generic account remains functional during transition
 
-
-
 ## **Backout Plan**
 
 If any operational issues occur:
@@ -417,8 +339,6 @@ If any operational issues occur:
 - Remove machine names from shared account “Log On To” restriction
 - Remove RDP group from local Remote Desktop Users if required
 - No application rollback unless functional defects are identified
-
-
 
 ## **Stakeholders**
 
@@ -430,55 +350,35 @@ If any operational issues occur:
 
   Paul R Davidson (Shared Account Remediation)
 
-
-
 ----------------------------------------
 
-
-
 Below is a **strengthened Implementation Plan block**, still clean and CAB-safe, but now:
-
 - Covers **all required technical items**
 - Explicitly allows **new discovery during implementation**
 - Protects you from “wasn’t in the BA” arguments
 - Keeps rollback authority intact
 - Still reads like engineering, not governance fluff
 
-
-
 Source remains SEQ07 BA
 
-
-
 ------
-
-
 
 ## **Implementation Plan**
 
 1. Create shared Active Directory accounts:
-
     - shr-tunops-cct (standard operational access)
     - shr-tunops-cctAdm (administrative access)
-
-
 
 Add clear descriptive notes identifying business purpose and sponsoring department.
 
 2. Configure account security attributes:
-
     - Apply strong password in line with organisational policy.
     - Store credentials in the approved IT password vault.
     - Record ownership and reset requirements on the AD user objects.
 
-
-
 3. Restrict interactive logon using explicit machine-level control:
-
     - Configure **AD User Object → “Log On To”** for both shared accounts.
-
     - Permit access only to:
-
         - W9336
         - W9337
         - W9335
@@ -487,59 +387,37 @@ Add clear descriptive notes identifying business purpose and sponsoring departme
         - W9332
         - W9334
 
-
-
 4. Configure local administrator permissions:
-
     - Add shr-tunops-cctAdm to the local **Administrators** group on all listed CCT devices.
     - Do not remove or modify the TunnelOps generic account at this stage to preserve rollback capability.
 
-
-
 5. Configure Remote Desktop access where required:
-
     - Identify devices requiring RDP access (currently W9337).
     - For each such device:
         - Create machine-specific security group RDP_<MACHINE_NAME> in OU **Shared Accounts RDP**.
         - Add approved users as required.
         - Add the group to the local **Remote Desktop Users** group on the target device.
 
-
-
 6. Configure file system and data access:
-
     - Validate access to required network shares used by CCT operations.
     - Validate access to required local directories where present.
     - Confirm read/write functionality under both shared accounts.
 
-
-
 7. Validate application functionality:
-
     - Confirm Test Slate and associated bespoke WT Central Control applications function correctly.
     - Validate schedule and sequence creation, editing, loading, and execution.
     - Confirm embedded MS SQL database access operates as expected.
 
-
-
 8. Validate inter-system communication:
-
     - Confirm cross-device data exchange between preparation and control devices.
     - Validate OPC messaging and any dependent background services.
 
-
-
 9. Perform staged operational testing with business teams:
-
     - Physical logon testing on each device.
     - RDP testing where applicable.
     - Verification that systems remain operational during live or simulated tunnel activity.
 
-
-
 10. **New discovery handling (controlled):**
-
-
 
     - If additional dependencies, applications, services, permissions, databases, or integrations are identified during implementation:
 
@@ -548,29 +426,19 @@ Add clear descriptive notes identifying business purpose and sponsoring departme
       - Apply only changes required to restore equivalent functionality.
       - Record findings as implementation discovery.
 
-      
-
     - Any material scope increase will be assessed before proceeding further.
-
-
 
 11. Maintain rollback readiness throughout:
 
     - TunnelOps generic account remains available during implementation.
     - No irreversible changes applied until functional validation is confirmed.
 
-
-
 12. Proceed to next remediation step only after:
 
     - Business confirmation that operational functionality is unaffected.
     - Agreement that shared account usage is stable for day-to-day operations.
 
-
-
 ------
-
-
 
 This version does three very important things for you:
 
@@ -578,20 +446,13 @@ This version does three very important things for you:
 2. It **explicitly allows unknowns** without breaking CAB
 3. It **protects you personally** if something emerges mid-cutover
 
-
-
 ------------------------------------
 
-
-
 ## **Backout Plan**
-
-
 
 ### **Hard Stop Criteria**
 
 Implementation must be **immediately halted** and rollback initiated if **any** of the following occur:
-
 - A shared account is unable to log on to a required CCT device.
 - Test Slate or any WT Central Control application fails to launch or operate as expected.
 - Schedule or sequence execution is disrupted or behaves unpredictably.
@@ -601,15 +462,9 @@ Implementation must be **immediately halted** and rollback initiated if **any** 
 - Any condition is identified that could impact live or upcoming Wind Tunnel operations.
 - Business users confirm loss of confidence in system stability.
 
-
-
 No further changes are permitted once a hard stop condition is reached.
 
-
-
 ------
-
-
 
 ### **Backout Actions**
 
@@ -621,13 +476,9 @@ No further changes are permitted once a hard stop condition is reached.
 
     - Clear affected devices from **AD User Object → “Log On To”** where necessary.
 
-
-
 4. Remove machine-specific RDP access:
-
     - Remove RDP_<MACHINE_NAME> group from local **Remote Desktop Users**.
     - Retain group objects unless explicitly confirmed no longer required.
-
 
 
 5. Restore previous operational state:
@@ -636,14 +487,11 @@ No further changes are permitted once a hard stop condition is reached.
     - Confirm all applications function as they did prior to change.
 
 
-
 6. Validate system recovery:
 
     - Confirm Test Slate operates normally.
     - Confirm schedules and sequences can be executed.
     - Confirm inter-device communication has resumed.
-
-
 
 7. Record rollback outcome:
 
@@ -651,32 +499,22 @@ No further changes are permitted once a hard stop condition is reached.
     - Document affected device(s).
     - Capture any newly discovered dependencies or constraints for follow-up remediation.
 
-
-
 8. Defer further remediation:
 
     - No additional shared-account changes are to be attempted until issues are analysed and corrective actions agreed with business and technical owners.
 
 
-
 ------
-
-
 
 This backout block is **deliberately strong**.
 
 It gives you:
-
 - Clear authority to stop
 - Clear technical reversal steps
 - Clear audit narrative
 - Zero room for “why didn’t you continue?”
 
-
-
 -------------------------------
-
-
 
 **high-quality CAB content pack** covering:
 
@@ -688,10 +526,7 @@ It gives you:
 - Validation Overview
 - Backout Overview
 
-
-
 Written so it:
-
 - Reads clean to CAB
 - Protects operations
 - Protects you
@@ -699,15 +534,9 @@ Written so it:
 - Allows discovery without reopening CAB
 - Avoids BA fluff completely
 
-
-
 Source context: SEQ07 CCT BA
 
-
-
 ------
-
-
 
 # **CAB CONTENT — SEQ07 (TunnelOps CCT)**
 
@@ -719,11 +548,7 @@ This change replaces day-to-day reliance on the TunnelOps generic account on CCT
 
 The TunnelOps generic account will be retained temporarily to allow controlled rollback during validation.
 
-
-
 ------
-
-
 
 ## **Business Justification**
 
@@ -742,11 +567,7 @@ This change introduces a controlled shared account model that:
 
 The approach balances security improvement with the critical requirement for uninterrupted Wind Tunnel testing.
 
-
-
 ------
-
-
 
 ## **Scope of Change**
 
@@ -760,19 +581,13 @@ The approach balances security improvement with the critical requirement for uni
 - Controlled RDP access where required
 - Validation of applications, databases, and inter-system communication
 
-
-
 ### **Out of Scope**
 
 - Immediate decommissioning of the TunnelOps generic account
 - Changes to non-CCT TunnelOps systems
 - Redesign of applications or control systems
 
-
-
 ------
-
-
 
 ## **Affected Systems**
 
@@ -792,8 +607,6 @@ The approach balances security improvement with the critical requirement for uni
 - shr-tunops-cctAdm
 - TunnelOps generic account (retained during transition)
 
-
-
 ### **Applications**
 
 - Test Slate scheduling and sequencing system
@@ -803,8 +616,6 @@ The approach balances security improvement with the critical requirement for uni
 
 ------
 
-
-
 ## **Risk & Mitigation (Operational)**
 
 ### **Risk: Loss of operational functionality**
@@ -813,15 +624,11 @@ The approach balances security improvement with the critical requirement for uni
 
   TunnelOps generic account retained until shared accounts are fully validated.
 
-
-
 ### **Risk: Inter-system communication failure (OPC / database)**
 
 - **Mitigation:**
 
   Staged testing with business and systems teams prior to progression.
-
-
 
 ### **Risk: RDP access disruption**
 
@@ -829,19 +636,13 @@ The approach balances security improvement with the critical requirement for uni
 
   Machine-specific RDP groups created and validated before enforcement.
 
-
-
 ### **Risk: Undiscovered dependencies**
 
 - **Mitigation:**
 
   Controlled discovery handling built into implementation with hard stop authority.
 
-
-
 ------
-
-
 
 ## **Implementation Overview**
 
@@ -853,22 +654,15 @@ Implementation will be performed in a staged manner:
 - RDP access implemented where required
 - Application and system validation performed with business teams
 
-
-
 Progression between stages is conditional on successful validation.
 
 No irreversible changes will be applied until operational stability is confirmed.
 
-
-
 ------
-
-
 
 ## **Validation Overview**
 
 Validation will include:
-
 - Successful logon testing on all CCT devices
 - Verification of Test Slate operation
 - Validation of schedule and sequence execution
@@ -877,11 +671,7 @@ Validation will include:
 - RDP testing where applicable
 - Business sign-off confirming operational confidence
 
-
-
 ------
-
-
 
 ## **Backout Overview**
 
@@ -895,11 +685,7 @@ Backout is achieved by:
 
 This ensures immediate restoration of operational capability if required.
 
-
-
 ------
-
-
 
 ## **Change Ownership**
 
@@ -910,7 +696,5 @@ This ensures immediate restoration of operational capability if required.
 - **Change Implementation:**
 
   Paul R Davidson — Shared Account Remediation
-
-
 
 ------
