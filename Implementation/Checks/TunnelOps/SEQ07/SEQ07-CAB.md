@@ -60,11 +60,11 @@
 
 1. **Account creation & attributes**
 
-    - Create shr-tunops-cct
+    - Create shr-tunops-wtoc
 
       Description: WT Central Control standard operational shared account.
 
-    - Create shr-tunops-cctAdm
+    - Create shr-tunops-wtocAdm
 
       Description: WT Central Control administrative shared account.
 
@@ -89,7 +89,7 @@
 
 
 3. **Local Permissions / Vendor Requirements**
-    - shr-tunops-cct01Adm to be added to local **Administrators** on all CCT devices.
+    - shr-tunops-wtocAdm to be added to local **Administrators** on all CCT devices.
     - No other business groups to be added at this stage.
 
 
@@ -203,8 +203,8 @@
 
 ## **Access**
 
-- Standard operations: shr-tunops-cct
-- Administrative tasks: shr-tunops-cctAdm
+- Standard operations: shr-tunops-wtoc
+- Administrative tasks: shr-tunops-wtocAdm
 - RDP access (where required): via RDP_<MACHINE_NAME> group membership.
 
 
@@ -272,8 +272,8 @@ This change introduces controlled shared accounts with explicit machine-level re
 
 
 - **Accounts:**
-    - shr-tunops-cct
-    - shr-tunops-cctAdm
+    - shr-tunops-wtoc
+    - shr-tunops-wtocAdm
     - TunnelOps generic account (retained temporarily for rollback)
 
 
@@ -366,8 +366,8 @@ Source remains SEQ07 BA
 ## **Implementation Plan**
 
 1. Create shared Active Directory accounts:
-    - shr-tunops-cct (standard operational access)
-    - shr-tunops-cctAdm (administrative access)
+    - shr-tunops-wtoc(standard operational access)
+    - shr-tunops-wtocAdm (administrative access)
 
 Add clear descriptive notes identifying business purpose and sponsoring department.
 
@@ -603,8 +603,8 @@ The approach balances security improvement with the critical requirement for uni
 
 ### **Accounts**
 
-- shr-tunops-cct
-- shr-tunops-cctAdm
+- shr-tunops-wtoc
+- shr-tunops-wtocAdm
 - TunnelOps generic account (retained during transition)
 
 ### **Applications**
