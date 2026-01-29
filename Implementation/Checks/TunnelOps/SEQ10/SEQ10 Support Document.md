@@ -1,6 +1,6 @@
 # SUPPORT HANDOVER DOCUMENT
 
-## SEQ10 — TunnelOps (GEN)-(WTE) Shared Account Remediation
+## SEQ10 — TunnelOps (WTE) Shared Account Remediation
 
 ------
 
@@ -17,18 +17,18 @@
 
 ## 1. Purpose
 
-This change replaces the legacy **TunnelOps generic Windows login** on selected General WT systems with **scoped shared accounts**, in line with the Shared Account Remediation programme.
+This change replaces the legacy **TunnelOps generic Windows login** on selected General WT systems with **scoped shared accounts**, in line with the Shared Account Remediation Project.
 
 The objectives are:
 
-- Remove uncontrolled generic logins
-- Enforce machine-scoped access
+- Remove  generic logins
+- Machine-scoped access
 - Preserve uninterrupted tunnel operations
 - Maintain clear ownership and auditability
 
 No operational workflows were changed.
 
-The legacy TunnelOps account was retained temporarily for rollback during UAT and can now be considered legacy only.
+The legacy TunnelOps account was retained temporarily for rollback during UAT and Project completion.
 
 ------
 
@@ -48,7 +48,7 @@ The legacy TunnelOps account was retained temporarily for rollback during UAT an
 
 - Original machine **W9419** was refreshed and replaced with **WF1CAD-C7W04S3**
 - All applications, permissions, shared account access and dependencies were fully migrated
-- Historical references to W9419 may still exist in documentation
+- Historical references to W9419 may still exist.
 
 **Criticality:** High
 
@@ -148,13 +148,13 @@ This prevents lateral movement and enforces blast-radius containment.
 ## 5. Local Administrator Model
 
 - `shr-tunops-wteAdm`
-  → Local Administrators on all three machines
+  → Local Administrators (If Required)
 - `shr-tunops-wte`
   → Standard user only
 
 Existing IT / DPT admin access remains unchanged.
 
-Important reality:
+Important:
 
 > Many TunnelOps applications are **not controlled by Windows admin rights**
 > Access is governed by Aero Software, OPC, or SQL permissions.
@@ -163,7 +163,7 @@ Important reality:
 
 ## 6. RDP Access Model
 
-RDP is **not enabled by default**.
+RDP is **not enabled by default**. (**WT2 Uses TightVNC**)
 
 When required:
 
@@ -173,8 +173,17 @@ Machine-specific groups are used:
 - RDP_WT-Healthmon
 - RDP_W9316
 
-Groups exist in **OU: Shared Accounts RDP**
+Groups in **OU: Shared Accounts RDP**
 and are added to local *Remote Desktop Users* only when requested.
+
+
+
+### 6.1 TightVNC Access (WT2 Standard)
+
+- WT2 environments primarily use **TightVNC** for remote viewing.
+- Used for:
+    - Healthmon monitoring Tunnel Screens
+    - Control room **W9316** Screens
 
 ------
 
@@ -199,8 +208,8 @@ Applications:
 Users may see:
 
 > “You do not have access to the application.”
-
-This is **not** an IT or admin issue.
+>
+>
 
 **Cause**
 
@@ -212,8 +221,6 @@ Aero Software must explicitly grant:
 
 - Application access
 - WT Run button permissions
-
-Local admin rights alone will never fix this.
 
 ------
 
@@ -262,6 +269,70 @@ C:\Health Monitor 4.8.6 (Dev)\WilliamsF1.WindTunnel.HealthMonitor.Host.exe
 Provides live tunnel health data across all screens.
 
 Depends on OPC services.
+
+
+
+------
+
+## 7.5 Tunnel CCTV (Axis Camera System)
+
+### Overview
+
+Tunnel CCTV is provided via **Axis Camera Station Pro** and is used by TunnelOps for **live visual monitoring of the wind tunnel and associated areas** during operation.
+
+------
+
+### Application
+
+- **Application:** Axis Camera Station Pro
+- **Camera Server:** WT-CAMS01
+- **Access Method:** Application login
+
+------
+
+### Access Model
+
+The TunnelOps shared account must be configured with **Level 3 access**:
+
+- Live camera viewing
+- PTZ (pan / tilt / zoom) control
+- **No access** to view or export recordings
+
+This access level is intentional and enforced for security and compliance.
+
+------
+
+### Important Support Note
+
+Camera visibility and PTZ functionality are **not controlled by local admin rights** on the workstation.
+
+If cameras are missing, greyed out, or PTZ is unavailable, this indicates a **camera system permission issue**.
+
+------
+
+### Known Issues Observed
+
+- Cameras missing from the device list
+- Thermal camera not visible
+- User account only has view-only rights
+- PTZ controls unavailable
+
+These issues occur when the account is not assigned the correct access level within the Axis system.
+
+------
+
+### Resolution Path
+
+Axis permissions are managed by the TIG.
+
+If CCTV issues are reported:
+
+1. Confirm Axis Camera Station Pro launches successfully
+2. Confirm connection to server **WT-CAMS01**
+3. Verify the shared account is assigned **Level 3 access**
+4. Raise a **Jira ticket**  Camera Systems if access changes are required
+
+
 
 ------
 
@@ -418,6 +489,37 @@ Known issue:
 - VSTO certificate trust errors
   Escalate to Aero Software.
 
+### Support Notes
+
+The Excel add-ins used on this workstation are business-critical for tunnel operation and rely on a combination of VBA macros and VSTO components loaded from the shared Aero Software location.
+
+Issues have been observed where add-ins fail to load or macros are blocked. These are **not Excel faults** and are typically caused by one or more of the following:
+
+- Microsoft Defender macro protection policies
+- Local or domain-based permission restrictions
+- Expired or untrusted VSTO installer signing certificates
+
+Common symptoms include:
+
+- Add-ins not appearing in Excel
+- Macros failing to execute
+- Security or trust prompts preventing installation
+
+These issues cannot be resolved through local administrator rights alone.
+
+If macro or add-in failures occur:
+
+- Do **not** repeatedly reinstall the add-ins
+- Do **not** bypass security prompts
+
+The issue must be escalated to the **Aero Software team** & **TIG** to review:
+
+- Certificate validity and trust chain
+- Defender policy exclusions (where approved)
+- Correct signing of the installer packages
+
+This ensures the add-ins remain secure while functioning correctly within the shared account environment.
+
 ------
 
 ## 13. Zeiss Quality / Metrology Suite
@@ -440,11 +542,11 @@ Issues observed:
 Cause:
 
 - Cached credentials
-- Legacy TunnelOps mailbox reuse
+- Legacy TunnelOps mailbox
 
 Resolution:
 
-- Shared account must use its own identity
+- Shared account has a Teams identity
 - Clear cached credentials
 
 ------
@@ -484,7 +586,8 @@ Currently blank (reserved).
 
 ### Notes
 
-- Not a kiosk device
+- Member of NO ScreenSaver
+- Member of No Power Save
 - Touch functionality required
 - Must not auto-lock
 
