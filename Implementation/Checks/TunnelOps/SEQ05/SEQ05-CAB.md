@@ -15,8 +15,8 @@
     - **W9341** — WT5 RTC host
     - **W9379** — WT2 thermal imaging system
     - **M3038** — WT2 motion capture monitoring
-    - **W9342** — WT4 RTC controller
-    - **W9339** — WT1 RTC controller
+    - **W9342** — WT4 RTC controller (**Mobile WT4**)
+    - **W9339** — WT1 RTC controller (**Mobile WT5**)
     - **W9324** — RTC software development workstation
     - **W9378** — RTC software development workstation (RDP-only)
 

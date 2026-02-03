@@ -383,13 +383,15 @@ Add clear descriptive notes identifying business purpose and sponsoring departme
         - W9337
         - W9335
         - W9326
-        - W9340
-        - W9332
+        - W9340 (**Mobile Unit WT4**)
+        - W9332 (**Mobile Unit WT5**)
         - W9334
+
 
 4. Configure local administrator permissions:
     - Add shr-tunops-cctAdm to the local **Administrators** group on all listed CCT devices.
     - Do not remove or modify the TunnelOps generic account at this stage to preserve rollback capability.
+
 
 5. Configure Remote Desktop access where required:
     - Identify devices requiring RDP access (currently W9337).
@@ -398,24 +400,29 @@ Add clear descriptive notes identifying business purpose and sponsoring departme
         - Add approved users as required.
         - Add the group to the local **Remote Desktop Users** group on the target device.
 
+
 6. Configure file system and data access:
     - Validate access to required network shares used by CCT operations.
     - Validate access to required local directories where present.
     - Confirm read/write functionality under both shared accounts.
+
 
 7. Validate application functionality:
     - Confirm Test Slate and associated bespoke WT Central Control applications function correctly.
     - Validate schedule and sequence creation, editing, loading, and execution.
     - Confirm embedded MS SQL database access operates as expected.
 
+
 8. Validate inter-system communication:
     - Confirm cross-device data exchange between preparation and control devices.
     - Validate OPC messaging and any dependent background services.
+
 
 9. Perform staged operational testing with business teams:
     - Physical logon testing on each device.
     - RDP testing where applicable.
     - Verification that systems remain operational during live or simulated tunnel activity.
+
 
 10. **New discovery handling (controlled):**
 
@@ -428,15 +435,18 @@ Add clear descriptive notes identifying business purpose and sponsoring departme
 
     - Any material scope increase will be assessed before proceeding further.
 
+
 11. Maintain rollback readiness throughout:
 
     - TunnelOps generic account remains available during implementation.
     - No irreversible changes applied until functional validation is confirmed.
 
+
 12. Proceed to next remediation step only after:
 
     - Business confirmation that operational functionality is unaffected.
     - Agreement that shared account usage is stable for day-to-day operations.
+
 
 ------
 
