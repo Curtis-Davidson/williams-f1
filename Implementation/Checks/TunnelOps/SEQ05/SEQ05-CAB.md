@@ -7,18 +7,19 @@
   Replace use of the legacy TunnelOps generic account on Real Time Controller (RTC) systems with controlled RTC shared accounts, while preserving 24/7 wind tunnel operations and safe rollback.
 
 - **Machines:**
-    - **W9338** — WT2 primary RTC controller
-    - **W9338A** — WT2 backup RTC controller
-    - **M9416** — WT2 image capture system
-    - **W9314** — WT2 image capture system (currently faulty)
-    - **W9417** — WT2 image capture system
-    - **W9341** — WT5 RTC host
-    - **W9379** — WT2 thermal imaging system
-    - **M3038** — WT2 motion capture monitoring
-    - **W9342** — WT4 RTC controller (**Mobile WT4**)
-    - **W9339** — WT1 RTC controller (**Mobile WT5**)
-    - **W9324** — RTC software development workstation
-    - **W9378** — RTC software development workstation (RDP-only)
+    - **W9338** — WT2 primary RTC controller **Production**
+    - **W9338A** — WT2 backup RTC controller **Production**
+    - **M9416** — WT2 image capture system **Production**
+    - **W9314** — WT2 image capture system (currently faulty) 
+    - **W9417** — WT2 image capture system **Production**
+    - **W9341** — WT5 (Mobile) RTC host
+    - **W9379** — WT2 thermal imaging system **Production**
+    - **M3038** — WT2 motion capture monitoring **Production**
+    - **W9342** — WT4 (Mobile) RTC controller (**Mobile WT4**)
+    - **W9339** — WT1 (Mobile) RTC controller (**Mobile WT5**) **Proceed with migration 1st WT5**
+    - **W9324** — RTC software development workstation **OnHold**
+    - **W9378** — RTC software development workstation (RDP-only) **StandAlone** shr-tunops-rtc, 23rd Feb 26, Can Start 
+Migration.
 
 
 

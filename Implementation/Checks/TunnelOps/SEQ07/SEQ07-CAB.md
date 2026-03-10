@@ -7,13 +7,13 @@
   Replace use of the TunnelOps generic account on WT Central Control System (CCT) devices with controlled shared accounts while maintaining 24/7 operational continuity.
 
 - **Machines:**
-    - W9336 — WT2 primary CCT control and Test Slate scheduling device
-    - W9337 — WT2 preparation and schedule/sequence setup device (RDP access required)
-    - W9335 — WT1 primary CCT control device
-    - W9326 — WT1 preparation and setup device
-    - W9340 — WT4 primary CCT control device
-    - W9332 — WT5 primary CCT control device
-    - W9334 — Backup CCT device (can replace any of the above)
+    - W9336 — WT2 primary CCT control and Test Slate scheduling device **Production**
+    - W9337 — WT2 preparation and schedule/sequence setup device (RDP access required) **Production**
+    - W9335 — WT1 primary CCT control device **Completed UAT**
+    - W9326 — WT1 preparation and setup device **Confirm**
+    - W9340 — WT4 primary CCT control device  **To be Done WOC Account**
+    - W9332 — WT5 primary CCT control device **Old-WT5**
+    - W9334 — Backup CCT device (can replace any of the above) **To Be Confirmed**
 
 - **Accounts:**
     - shr-tunops-cct — standard shared account for CCT operation
@@ -263,10 +263,10 @@ This change introduces controlled shared accounts with explicit machine-level re
 - **Machines:**
     - W9336 — WT2 primary CCT control device
     - W9337 — WT2 preparation / setup device
-    - W9335 — WT1 primary CCT control device
+    - W9335 — New WT5 (Mobile) primary CCT control device
     - W9326 — WT1 preparation device
-    - W9340 — WT4 primary CCT control device
-    - W9332 — WT5 primary CCT control device
+    - W9340 — WT4 (Mobile) primary CCT control device
+    - W9332 — WT5 (Mobile) primary CCT control device
     - W9334 — Backup CCT device
 
 
@@ -381,10 +381,10 @@ Add clear descriptive notes identifying business purpose and sponsoring departme
     - Permit access only to:
         - W9336
         - W9337
-        - W9335
+        - W9335 (Start Migration-New Mobile Unit WT5)
         - W9326
         - W9340 (**Mobile Unit WT4**)
-        - W9332 (**Mobile Unit WT5**)
+        - W9332 (**Mobile Unit WT5**) **RePurposed Later**
         - W9334
 
 
