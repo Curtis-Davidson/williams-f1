@@ -37,7 +37,7 @@ Migration.
     - Motion capture monitoring software
     - RTC software development tools
     - OPC / bespoke messaging components
-    - No licence dongles identified; licensing tied to specialist machinery
+    - No licence dongles identified; licensing tied to specialist machinerycmdslmgr /
 
 
 - **Key Actions:**
