@@ -6,8 +6,8 @@
     - M10501 — Rolling Road System backup (IP swap failover)
     - M10504 — Model Motion System primary controller
     - M10503 — Model Motion System backup (IP swap failover)
-    - W9343 — Primary comms relay between control apps and machinery
-    - W9309 — Backup comms relay
+    - W9343 —  Backup comms relay
+    - W9309 —  Primary comms relay between control apps and machinery
     - W9321 — Air temperature control system (RDP-only access)
 - Accounts:
     - shr-tunops-mts01 — standard access shared account
@@ -624,9 +624,9 @@ That is the clean version. No pretending a non-existent admin account still exis
 
 ### Comms relay pair
 
-- **W9343** primary, IP `10.100.3.7`
+- **W9343** primary, IP `10.100.3.7`(THIS IS BACKP)
 - **W9343** second NIC: `10.100.1.10`
-- **W9309** backup, IP `10.100.3.52`
+- **W9309** backup, IP `10.100.3.52`(THIS IS PRIMARY)
 - Primary/backup achieved by IP swap between W9343 and W9309.
 
 ### Temperature control device
