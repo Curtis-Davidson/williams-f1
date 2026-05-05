@@ -451,8 +451,8 @@ Immediate decommission of the legacy `TunnelOps` account is out of scope. Full s
 - **M10501** — Backup device for M10502. Remains network-connected for updates. Primary/backup achieved by IP swap with M10502.
 - **M10504** — Primary device for the Model Motion System. 24/7 critical. Located in a locked cabinet.
 - **M10503** — Backup device for M10504. Remains network-connected for updates. Primary/backup achieved by IP swap with M10504.
-- **W9343** — Primary communications/control relay device between applications and specialist machinery for Rolling Road and Model Motion systems. Located in a locked cabinet.
-- **W9309** — Backup device for W9343. Remains network-connected for updates. Primary/backup achieved by IP swap with W9343.
+- **W9309** — Primary communications/control relay device between applications and specialist machinery for Rolling Road and Model Motion systems. Located in a locked cabinet.
+- **W9343** — Backup device for W9343. Remains network-connected for updates. Primary/backup achieved by IP swap with W9343.
 - **W9321** — Device used to control temperature of the air supply to the rolling road. Located in a secure space in Wind Tunnel 2. No keyboard, mouse, or screen connected. Access is via RDP only.
 
 ### Shared account
@@ -1668,3 +1668,15 @@ If failure occurs:
 
 If you want next level:
 I can map **exact OPC components (DCOM, CLSIDs, identity, launch permissions)** per device so you don’t get hit with the classic “OPC inactive” nonsense again.
+
+
+
+Replace use of a **shared, uncontrolled generic account (TunnelOps)** with a **traceable and scoped shared account (`shr-tunops-mts`)**, improving accountability and auditability of access.
+
+**Reduce security risk** by limiting logon access to only the specific MTS devices required for Rolling Road and Model Motion operations, rather than broad, implicit access across systems.
+
+**Standardise access control** in line with the Shared Account Remediation programme (explicit logon restriction and controlled RDP access), removing legacy practices that evolved without governance.
+
+**Maintain full operational capability** by ensuring the new shared account provides identical access to required applications, storage paths, and control systems as the existing TunnelOps account.
+
+
