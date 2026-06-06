@@ -664,7 +664,7 @@ Mitigation: Controlled implementation window, staged testing, immediate rollback
 2. Add account description documenting purpose, business owner, and password-handling notes.
 3. Set strong password in line with policy and store securely in approved vault.
 4. Configure AD user object **Log On To** for:
-    - M10501
+    - M10501 Test
     - M10502
     - M10503
     - M10504
